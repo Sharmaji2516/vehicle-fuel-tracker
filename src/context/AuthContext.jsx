@@ -32,6 +32,11 @@ export const AuthProvider = ({ children }) => {
             await signInWithPopup(auth, googleProvider);
         } catch (error) {
             console.error("Login failed:", error);
+            if (error.code === 'auth/unauthorized-domain') {
+                alert(`Domain Error: This website domain is not authorized in your Firebase Console. \n\nPlease add ${window.location.hostname} to Authorized Domains in Firebase Authentication Settings.`);
+            } else {
+                alert(`Login Failed: ${error.message}`);
+            }
         }
     };
 
