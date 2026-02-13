@@ -28,7 +28,7 @@ const Login = () => {
         } catch (err) {
             let userFriendlyMessage = err.message.replace('Firebase:', '').trim();
 
-            if (err.code === 'auth/user-not-found') {
+            if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
                 userFriendlyMessage = "user doesn't exist pls sign up";
             } else if (err.code === 'auth/invalid-email') {
                 userFriendlyMessage = "Please use a proper email format.";
