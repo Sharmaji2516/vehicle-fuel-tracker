@@ -29,13 +29,17 @@ const Login = () => {
             let userFriendlyMessage = err.message.replace('Firebase:', '').trim();
 
             if (err.code === 'auth/user-not-found') {
-                userFriendlyMessage = "No User Exist, pls create a account in proper format";
+                userFriendlyMessage = "user doesn't exist pls sign up";
             } else if (err.code === 'auth/invalid-email') {
                 userFriendlyMessage = "Please use a proper email format.";
             } else if (err.code === 'auth/operation-not-allowed') {
-                userFriendlyMessage = "Email/Password login is not enabled in Firebase Console. Please enable it in Authentication > Sign-in method.";
+                userFriendlyMessage = "user doesn't exist pls sign up . (Make sure Email/Password is enabled in Firebase Console)";
             } else if (err.code === 'auth/wrong-password') {
                 userFriendlyMessage = "Incorrect password. Please try again.";
+            } else if (err.code === 'auth/email-already-in-use') {
+                userFriendlyMessage = "Email already registered. Please Sign In.";
+            } else if (err.code === 'auth/weak-password') {
+                userFriendlyMessage = "Password should be at least 6 characters.";
             }
 
             setError(userFriendlyMessage);
