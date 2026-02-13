@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth, googleProvider } from '../firebase';
-import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import {
+    signInWithPopup,
+    signOut,
+    onAuthStateChanged,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    updateProfile
+} from 'firebase/auth';
 
 const AuthContext = createContext();
 
@@ -22,6 +29,27 @@ export const AuthProvider = ({ children }) => {
         });
         return unsubscribe;
     }, []);
+
+    const signup = async (email, password, displayName) => {
+        if (!auth) return;
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            await updateProfile(userCredential.user, { displayName });
+            return userCredential.user;
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    const loginWithEmail = async (email, password) => {
+        if (!auth) return;
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            return userCredential.user;
+        } catch (error) {
+            throw error;
+        }
+    };
 
     const login = async () => {
         if (!auth) {
@@ -52,6 +80,8 @@ export const AuthProvider = ({ children }) => {
     const value = {
         user,
         login,
+        signup,
+        loginWithEmail,
         logout,
         loading
     };

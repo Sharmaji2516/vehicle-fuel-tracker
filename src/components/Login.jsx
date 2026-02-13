@@ -1,8 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
-    const { login } = useAuth();
+    const { login, signup, loginWithEmail } = useAuth();
+    const [isSignUp, setIsSignUp] = useState(false);
+    const [error, setError] = useState('');
+    const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+        displayName: ''
+    });
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+        setError('');
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        try {
+            if (isSignUp) {
+                await signup(formData.email, formData.password, formData.displayName);
+            } else {
+                await loginWithEmail(formData.email, formData.password);
+            }
+        } catch (err) {
+            setError(err.message.replace('Firebase:', '').trim());
+        }
+    };
 
     return (
         <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 text-white relative overflow-hidden">
@@ -10,12 +36,72 @@ const Login = () => {
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-purple-700/20 blur-[120px] animate-pulse-slow" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-700/20 blur-[120px] animate-pulse-slow" />
 
-            <div className="z-10 bg-slate-800/50 backdrop-blur-xl border border-slate-700 p-8 rounded-2xl shadow-2xl max-w-md w-full text-center">
-                <div className="mb-6">
+            <div className="z-10 bg-slate-800/50 backdrop-blur-xl border border-slate-700 p-8 rounded-2xl shadow-2xl max-w-md w-full">
+                <div className="mb-6 text-center">
                     <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 mb-2">
                         FuelTracker
                     </h1>
-                    <p className="text-slate-400">Secure Cloud Sync & Backup</p>
+                    <p className="text-slate-400">{isSignUp ? 'Create your account' : 'Welcome Back'}</p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {isSignUp && (
+                        <div>
+                            <label className="block text-sm font-medium text-slate-400 mb-1">Full Name</label>
+                            <input
+                                type="text"
+                                name="displayName"
+                                required
+                                value={formData.displayName}
+                                onChange={handleChange}
+                                placeholder="Enter your name"
+                                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                            />
+                        </div>
+                    )}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-400 mb-1">Email Address</label>
+                        <input
+                            type="email"
+                            name="email"
+                            required
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="you@example.com"
+                            className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-400 mb-1">Password</label>
+                        <input
+                            type="password"
+                            name="password"
+                            required
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="••••••••"
+                            className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                        />
+                    </div>
+
+                    {error && (
+                        <div className="bg-rose-500/10 border border-rose-500/50 text-rose-400 text-xs p-3 rounded-lg">
+                            {error}
+                        </div>
+                    )}
+
+                    <button
+                        type="submit"
+                        className="w-full bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-bold py-3.5 rounded-xl shadow-lg transform transition hover:-translate-y-0.5"
+                    >
+                        {isSignUp ? 'Sign Up' : 'Sign In'}
+                    </button>
+                </form>
+
+                <div className="my-6 flex items-center gap-4">
+                    <div className="h-[1px] flex-1 bg-slate-700"></div>
+                    <span className="text-xs text-slate-500 font-medium">OR</span>
+                    <div className="h-[1px] flex-1 bg-slate-700"></div>
                 </div>
 
                 <div className="space-y-4">
@@ -32,19 +118,21 @@ const Login = () => {
                         Sign in with Google
                     </button>
 
-                    <div className="text-left space-y-3 mt-6 p-4 bg-slate-700/30 rounded-xl border border-slate-600/50">
-                        <h3 className="text-sm font-semibold text-indigo-300 uppercase tracking-wider">How your data is protected:</h3>
-                        <ul className="text-xs text-slate-400 space-y-2 list-disc pl-4">
-                            <li>Each user has a unique ID tied to their Google account.</li>
-                            <li>Data is filtered so you <span className="text-indigo-400">only</span> see what you added.</li>
-                            <li>Cloud sync ensures your records are never lost, even if you refresh or switch devices.</li>
-                        </ul>
-                    </div>
+                    <button
+                        onClick={() => setIsSignUp(!isSignUp)}
+                        className="w-full text-slate-400 hover:text-white text-sm font-medium transition-colors"
+                    >
+                        {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
+                    </button>
 
-                    <p className="text-[10px] text-slate-500 mt-4 leading-relaxed">
-                        Authentication is handled securely by Google, ensuring your password never reaches our servers.
-                        Anyone can sign in, but they will only access their own private dashboard.
-                    </p>
+                    <div className="text-left space-y-3 mt-6 p-4 bg-slate-700/30 rounded-xl border border-slate-600/50">
+                        <h3 className="text-[10px] font-semibold text-indigo-300 uppercase tracking-widest">Data Protection:</h3>
+                        <p className="text-[10px] text-slate-400 leading-relaxed">
+                            {isSignUp
+                                ? "Creating a password account allows you to sync your data privately across all devices using your own credentials."
+                                : "Sign in to access your secure vehicle data and cloud sync history."}
+                        </p>
+                    </div>
                 </div>
             </div>
 
