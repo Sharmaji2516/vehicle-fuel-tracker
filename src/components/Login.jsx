@@ -26,7 +26,19 @@ const Login = () => {
                 await loginWithEmail(formData.email, formData.password);
             }
         } catch (err) {
-            setError(err.message.replace('Firebase:', '').trim());
+            let userFriendlyMessage = err.message.replace('Firebase:', '').trim();
+
+            if (err.code === 'auth/user-not-found') {
+                userFriendlyMessage = "No User Exist, pls create a account in proper format";
+            } else if (err.code === 'auth/invalid-email') {
+                userFriendlyMessage = "Please use a proper email format.";
+            } else if (err.code === 'auth/operation-not-allowed') {
+                userFriendlyMessage = "Email/Password login is not enabled in Firebase Console. Please enable it in Authentication > Sign-in method.";
+            } else if (err.code === 'auth/wrong-password') {
+                userFriendlyMessage = "Incorrect password. Please try again.";
+            }
+
+            setError(userFriendlyMessage);
         }
     };
 
