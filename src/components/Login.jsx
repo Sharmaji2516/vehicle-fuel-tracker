@@ -28,14 +28,12 @@ const Login = () => {
         } catch (err) {
             let userFriendlyMessage = err.message.replace('Firebase:', '').trim();
 
-            if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-                userFriendlyMessage = "user doesn't exist pls sign up";
+            if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+                userFriendlyMessage = "Invalid username or password";
             } else if (err.code === 'auth/invalid-email') {
                 userFriendlyMessage = "Please use a proper email format.";
             } else if (err.code === 'auth/operation-not-allowed') {
-                userFriendlyMessage = "user doesn't exist pls sign up . (Make sure Email/Password is enabled in Firebase Console)";
-            } else if (err.code === 'auth/wrong-password') {
-                userFriendlyMessage = "Incorrect password. Please try again.";
+                userFriendlyMessage = "Invalid username or password . (Make sure Email/Password is enabled in Firebase Console)";
             } else if (err.code === 'auth/email-already-in-use') {
                 userFriendlyMessage = "Email already registered. Please Sign In.";
             } else if (err.code === 'auth/weak-password') {
