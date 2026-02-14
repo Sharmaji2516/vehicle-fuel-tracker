@@ -12,12 +12,7 @@ export const useFuel = () => {
 export const FuelProvider = ({ children }) => {
     const { user } = useAuth();
 
-    // We still keep local storage for offline capability or cache, 
-    // but effectively we want to prioritize cloud data if logged in.
-    // For simplicity in this "fast" implementation, we will use local state 
-    // primarily driven by the firestore listener if connected.
-
-    // Initialize with empty arrays to avoid showing local data to wrong user
+    // State management
     const [vehicles, setVehicles] = useState(() => {
         const saved = localStorage.getItem('vehicles');
         return saved ? JSON.parse(saved) : [];
@@ -31,70 +26,84 @@ export const FuelProvider = ({ children }) => {
         return saved ? JSON.parse(saved) : [];
     });
 
-    // Sync Vehicles from Firestore filtered by User
-    useEffect(() => {
-        if (!isConfigured || !user) return;
-
-        const q = query(collection(db, "vehicles"), where("userId", "==", user.uid));
-        const unsubscribe = onSnapshot(q,
-            (snapshot) => {
-                const remoteVehicles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                setVehicles(remoteVehicles);
-            },
-            (error) => {
-                console.error("Firestore Vehicles Error:", error);
-            }
-        );
-        return () => unsubscribe();
-    }, [user]);
-
-    // Sync Fuel Entries
-    useEffect(() => {
-        if (!isConfigured || !user) return;
-
-        const q = query(collection(db, "entries"), where("userId", "==", user.uid));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            setEntries(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        });
-        return () => unsubscribe();
-    }, [user]);
-
-    // LocalStorage sync as fallback/cache
+    // Save to LocalStorage whenever state changes
     useEffect(() => {
         localStorage.setItem('vehicles', JSON.stringify(vehicles));
-    }, [vehicles]);
-
-    useEffect(() => {
         localStorage.setItem('entries', JSON.stringify(entries));
-    }, [entries]);
-
-    useEffect(() => {
         localStorage.setItem('serviceEntries', JSON.stringify(serviceEntries));
-    }, [serviceEntries]);
+    }, [vehicles, entries, serviceEntries]);
 
-    // Sync Service Entries
+    // Data Migration: Move guest data to user UID on login
     useEffect(() => {
         if (!isConfigured || !user) return;
 
-        const q = query(collection(db, "serviceEntries"), where("userId", "==", user.uid));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            setServiceEntries(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        });
-        return () => unsubscribe();
-    }, [user]);
+        const migrateData = async () => {
+            let migrated = false;
+
+            // Migrate Vehicles
+            const guestVehicles = vehicles.filter(v => v.userId === 'guest');
+            for (const v of guestVehicles) {
+                const updated = { ...v, userId: user.uid };
+                await setDoc(doc(db, "vehicles", v.id), updated);
+                migrated = true;
+            }
+
+            // Migrate Entries
+            const guestEntries = entries.filter(e => e.userId === 'guest');
+            for (const e of guestEntries) {
+                const updated = { ...e, userId: user.uid };
+                await setDoc(doc(db, "entries", e.id), updated);
+                migrated = true;
+            }
+
+            // Migrate Service Entries
+            const guestServices = serviceEntries.filter(s => s.userId === 'guest');
+            for (const s of guestServices) {
+                const updated = { ...s, userId: user.uid };
+                await setDoc(doc(db, "serviceEntries", s.id), updated);
+                migrated = true;
+            }
+
+            if (migrated) {
+                console.log("Guest data migrated successfully");
+            }
+        };
+
+        migrateData();
+    }, [user, isConfigured]);
+
+    // Sync Handlers (Clean, no state dependencies to avoid loops)
+    useEffect(() => {
+        if (!isConfigured || !user) return;
+
+        const vQ = query(collection(db, "vehicles"), where("userId", "==", user.uid));
+        const stopVehicles = onSnapshot(vQ, (s) => setVehicles(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+
+        const eQ = query(collection(db, "entries"), where("userId", "==", user.uid));
+        const stopEntries = onSnapshot(eQ, (s) => setEntries(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+
+        const sQ = query(collection(db, "serviceEntries"), where("userId", "==", user.uid));
+        const stopServices = onSnapshot(sQ, (s) => setServiceEntries(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+
+        return () => {
+            stopVehicles();
+            stopEntries();
+            stopServices();
+        };
+    }, [user, isConfigured]);
 
     const addVehicle = async (vehicle) => {
-        if (!user) return;
-        const newVehicle = { ...vehicle, id: Date.now().toString(), userId: user.uid };
+        const id = Date.now().toString();
+        const newVehicle = { ...vehicle, id, userId: user?.uid || 'guest' };
         setVehicles(prev => [...prev, newVehicle]);
-        if (isConfigured) await setDoc(doc(db, "vehicles", newVehicle.id), newVehicle);
+        if (user && isConfigured) await setDoc(doc(db, "vehicles", id), newVehicle);
     };
 
     const addEntry = async (entry) => {
-        if (!user) return;
-        const newEntry = { ...entry, id: Date.now().toString(), userId: user.uid };
+        const id = Date.now().toString();
+        const newEntry = { ...entry, id, userId: user?.uid || 'guest' };
         setEntries(prev => [...prev, newEntry]);
-        if (isConfigured) await setDoc(doc(db, "entries", newEntry.id), newEntry);
+        if (user && isConfigured) await setDoc(doc(db, "entries", id), newEntry);
     };
 
     const deleteEntry = async (id) => {
@@ -104,14 +113,14 @@ export const FuelProvider = ({ children }) => {
 
     const editEntry = async (updatedEntry) => {
         setEntries(prev => prev.map(e => e.id === updatedEntry.id ? updatedEntry : e));
-        if (isConfigured) await setDoc(doc(db, "entries", updatedEntry.id), { ...updatedEntry, userId: user.uid });
+        if (user && isConfigured) await setDoc(doc(db, "entries", updatedEntry.id), { ...updatedEntry });
     };
 
     const addServiceEntry = async (entry) => {
-        if (!user) return;
-        const newEntry = { ...entry, id: Date.now().toString(), userId: user.uid };
+        const id = Date.now().toString();
+        const newEntry = { ...entry, id, userId: user?.uid || 'guest' };
         setServiceEntries(prev => [...prev, newEntry]);
-        if (isConfigured) await setDoc(doc(db, "serviceEntries", newEntry.id), newEntry);
+        if (user && isConfigured) await setDoc(doc(db, "serviceEntries", id), newEntry);
     };
 
     const deleteServiceEntry = async (id) => {
@@ -121,7 +130,7 @@ export const FuelProvider = ({ children }) => {
 
     const editServiceEntry = async (updatedEntry) => {
         setServiceEntries(prev => prev.map(e => e.id === updatedEntry.id ? updatedEntry : e));
-        if (isConfigured) await setDoc(doc(db, "serviceEntries", updatedEntry.id), { ...updatedEntry, userId: user.uid });
+        if (user && isConfigured) await setDoc(doc(db, "serviceEntries", updatedEntry.id), { ...updatedEntry });
     };
 
     const getVehicleEntries = (vehicleId) => {
