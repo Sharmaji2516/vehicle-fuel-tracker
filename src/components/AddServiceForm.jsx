@@ -19,30 +19,24 @@ const AddServiceForm = ({ vehicleId, onClose, initialData }) => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
         if (isSaving) return;
 
         setIsSaving(true);
-        try {
-            const entryData = {
-                ...formData,
-                vehicleId,
-                odometer: parseFloat(formData.odometer),
-                cost: parseFloat(formData.cost) || 0
-            };
+        const entryData = {
+            ...formData,
+            vehicleId,
+            odometer: parseFloat(formData.odometer),
+            cost: parseFloat(formData.cost) || 0
+        };
 
-            if (initialData) {
-                await editServiceEntry({ ...entryData, id: initialData.id });
-            } else {
-                await addServiceEntry(entryData);
-            }
-            onClose();
-        } catch (error) {
-            console.error("Error saving service:", error);
-            alert("Failed to save service. Please try again.");
-            setIsSaving(false);
+        if (initialData) {
+            editServiceEntry({ ...entryData, id: initialData.id });
+        } else {
+            addServiceEntry(entryData);
         }
+        onClose();
     };
 
     return (
