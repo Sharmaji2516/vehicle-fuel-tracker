@@ -1,7 +1,7 @@
 import React from 'react';
 import { calculateMileage, calculateAverageMileage, calculateTotalSpent, calculateAllMileages, formatDate } from '../utils/calculations';
 
-const VehicleCard = ({ vehicle, entries, onAddEntry, onViewHistory }) => {
+const VehicleCard = ({ vehicle, entries, onAddEntry, onViewHistory, onAddService }) => {
     const sortedEntries = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
     const lastMileage = calculateMileage(sortedEntries);
     const avgMileage = calculateAverageMileage(sortedEntries);
@@ -45,7 +45,7 @@ const VehicleCard = ({ vehicle, entries, onAddEntry, onViewHistory }) => {
                             </svg>
                         </button>
                         <button
-                            onClick={(e) => { e.stopPropagation(); onAddService(vehicle.id); }}
+                            onClick={(e) => onAddService(e)}
                             className="bg-emerald-600 hover:bg-emerald-500 text-white p-1.5 rounded-lg transition-colors shadow-lg shadow-emerald-500/30"
                             title="Add Service"
                         >
