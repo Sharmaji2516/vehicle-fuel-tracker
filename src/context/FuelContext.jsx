@@ -78,8 +78,7 @@ export const FuelProvider = ({ children }) => {
 
         const q = query(collection(db, "serviceEntries"), where("userId", "==", user.uid));
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            const remoteData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if (remoteData.length > 0) setServiceEntries(remoteData);
+            setServiceEntries(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         });
         return () => unsubscribe();
     }, [user]);

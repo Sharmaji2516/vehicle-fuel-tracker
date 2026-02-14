@@ -5,10 +5,6 @@ const Layout = ({ children }) => {
     const { user, logout } = useAuth();
     return (
         <div className="min-h-screen bg-slate-900 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white">
-            {/* DEBUG BANNER */}
-            <div className="bg-rose-600 text-white text-[10px] font-bold py-1 px-4 text-center z-[100] relative">
-                🚨 VERSION v1.3 LIVE - IF YOU SEE THIS, UPDATE IS WORKING 🚨
-            </div>
             {/* Background Gradients */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-purple-700/20 blur-[120px]" />
