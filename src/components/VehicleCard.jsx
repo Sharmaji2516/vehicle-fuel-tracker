@@ -1,11 +1,11 @@
 import React from 'react';
 import { calculateMileage, calculateAverageMileage, calculateTotalSpent, calculateAllMileages, formatDate } from '../utils/calculations';
 
-const VehicleCard = ({ vehicle, entries, onAddEntry, onViewHistory, onAddService }) => {
+const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onViewHistory, onAddService }) => {
     const sortedEntries = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
     const lastMileage = calculateMileage(sortedEntries);
     const avgMileage = calculateAverageMileage(sortedEntries);
-    const totalSpent = calculateTotalSpent(entries);
+    const totalSpent = calculateTotalSpent(entries, serviceEntries);
     const recentMileages = calculateAllMileages(entries).slice(0, 3);
 
     return (

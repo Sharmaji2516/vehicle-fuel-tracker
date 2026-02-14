@@ -31,8 +31,10 @@ export const calculateAverageMileage = (entries) => {
     return (totalDistance / totalFuel).toFixed(2);
 };
 
-export const calculateTotalSpent = (entries) => {
-    return entries.reduce((acc, curr) => acc + Number(curr.totalCost), 0).toFixed(2);
+export const calculateTotalSpent = (fuelEntries = [], serviceEntries = []) => {
+    const fuelTotal = fuelEntries.reduce((acc, curr) => acc + Number(curr.totalCost || 0), 0);
+    const serviceTotal = serviceEntries.reduce((acc, curr) => acc + Number(curr.cost || 0), 0);
+    return (fuelTotal + serviceTotal).toFixed(2);
 };
 export const calculateAllMileages = (entries) => {
     if (!entries || entries.length < 2) return [];

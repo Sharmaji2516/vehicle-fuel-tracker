@@ -2,15 +2,30 @@ import React, { useState } from 'react';
 import { useFuel } from '../context/FuelContext';
 
 const AddServiceForm = ({ vehicleId, onClose, initialData }) => {
-    const { addServiceEntry, editServiceEntry, vehicles } = useFuel();
+    const { addServiceEntry, editServiceEntry, vehicles, getVehicleEntries, getVehicleServiceEntries } = useFuel();
     const vehicle = vehicles.find(v => v.id === vehicleId);
 
-    const [formData, setFormData] = useState(initialData || {
-        date: new Date().toISOString().split('T')[0],
-        odometer: '',
-        serviceType: '',
-        cost: '',
-        paymentMode: 'Cash'
+    // Get latest odometer reading for auto-fill
+    const latestOdometer = () => {
+        const fuelEntries = getVehicleEntries(vehicleId);
+        const serviceEntries = getVehicleServiceEntries(vehicleId);
+        const all = [...fuelEntries, ...serviceEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
+        return all[0]?.odometer || '';
+    };
+
+    const [formData, setFormData] = useState(() => {
+        if (initialData) {
+            // Normalize payment mode for existing data (Title Case)
+            const normalizedPayment = initialData.paymentMode?.charAt(0).toUpperCase() + initialData.paymentMode?.slice(1).toLowerCase();
+            return { ...initialData, paymentMode: normalizedPayment || 'Cash' };
+        }
+        return {
+            date: new Date().toISOString().split('T')[0],
+            odometer: latestOdometer(),
+            serviceType: '',
+            cost: '',
+            paymentMode: 'Cash'
+        };
     });
     const [isSaving, setIsSaving] = useState(false);
 

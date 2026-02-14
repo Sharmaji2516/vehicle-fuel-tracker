@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useFuel } from '../context/FuelContext';
+import { useAuth } from '../context/AuthContext';
 import VehicleCard from './VehicleCard';
 import AddEntryForm from './AddEntryForm';
 import AddVehicleForm from './AddVehicleForm';
@@ -8,7 +9,8 @@ import ServiceHistoryTable from './ServiceHistoryTable';
 import AddServiceForm from './AddServiceForm';
 
 const Dashboard = () => {
-    const { vehicles, getVehicleEntries, addVehicle } = useFuel();
+    const { user } = useAuth();
+    const { vehicles, getVehicleEntries, addVehicle, syncStatus } = useFuel();
     const [selectedVehicleId, setSelectedVehicleId] = useState(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
@@ -59,11 +61,12 @@ const Dashboard = () => {
                         <h2 className="text-2xl font-bold text-white border-l-4 border-indigo-500 pl-4">My Vehicles</h2>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                             <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700">
-                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold hidden sm:inline">Cloud Synced</span>
-                                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold sm:hidden">Synced</span>
+                                <div className={`w-2 h-2 rounded-full ${syncStatus === 'synced' ? 'bg-emerald-500 animate-pulse' : syncStatus === 'offline' ? 'bg-slate-500' : 'bg-amber-500'}`}></div>
+                                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold px-1">
+                                    {syncStatus === 'synced' ? 'Cloud Synced' : syncStatus === 'migrating' ? 'Migrating...' : syncStatus === 'syncing' ? 'Syncing...' : 'Offline'}
+                                </span>
                             </div>
-                            <span className="text-[10px] text-indigo-400 font-mono bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">v1.3 - UI Optimized</span>
+                            <span className="text-[10px] text-indigo-400 font-mono bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">v1.5 - Absolute Sync</span>
                         </div>
                     </div>
                     <div className="flex gap-2">
@@ -96,7 +99,7 @@ const Dashboard = () => {
 
                 {vehicles.length === 0 ? (
                     <div className="text-center p-12 bg-slate-800/50 rounded-2xl border border-dashed border-slate-700">
-                        <p className="text-slate-400 text-lg mb-4">No vehicles found in the cloud.</p>
+                        <p className="text-slate-400 text-lg mb-4">{syncStatus === 'migrating' ? 'Migrating your data...' : 'No vehicles found in the cloud.'}</p>
                         <p className="text-slate-500 text-sm">Click "Add Vehicle" or "Setup Garage" to get started!</p>
                     </div>
                 ) : (
@@ -106,6 +109,7 @@ const Dashboard = () => {
                                 <VehicleCard
                                     vehicle={vehicle}
                                     entries={getVehicleEntries(vehicle.id)}
+                                    serviceEntries={useFuel().getVehicleServiceEntries(vehicle.id)}
                                     onAddEntry={(e, id) => {
                                         e.stopPropagation();
                                         handleAddEntry(vehicle.id);
