@@ -1,0 +1,121 @@
+import React, { useState } from 'react';
+import { useFuel } from '../context/FuelContext';
+
+const AddServiceForm = ({ vehicleId, onClose, initialData }) => {
+    const { addServiceEntry, editServiceEntry, vehicles } = useFuel();
+    const vehicle = vehicles.find(v => v.id === vehicleId);
+
+    const [formData, setFormData] = useState(initialData || {
+        date: new Date().toISOString().split('T')[0],
+        odometer: '',
+        serviceType: '',
+        notes: '',
+        cost: ''
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const entryData = {
+            ...formData,
+            vehicleId,
+            odometer: parseFloat(formData.odometer),
+            cost: parseFloat(formData.cost) || 0
+        };
+
+        if (initialData) {
+            await editServiceEntry({ ...entryData, id: initialData.id });
+        } else {
+            await addServiceEntry(entryData);
+        }
+        onClose();
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl animate-fade-in-up">
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-bold text-white">{initialData ? 'Edit Service' : 'Add Service'} for {vehicle?.name}</h3>
+                    <button onClick={onClose} className="text-slate-400 hover:text-white">✕</button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-slate-400 mb-1">Date</label>
+                        <input
+                            type="date"
+                            name="date"
+                            value={formData.date}
+                            onChange={handleChange}
+                            required
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-400 mb-1">Odometer (km)</label>
+                        <input
+                            type="number"
+                            name="odometer"
+                            value={formData.odometer}
+                            onChange={handleChange}
+                            required
+                            placeholder="e.g. 15000"
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-400 mb-1">Service Type</label>
+                        <input
+                            type="text"
+                            name="serviceType"
+                            value={formData.serviceType}
+                            onChange={handleChange}
+                            required
+                            placeholder="e.g. Oil Change, Tire Rotation"
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-400 mb-1">Cost</label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            name="cost"
+                            value={formData.cost}
+                            onChange={handleChange}
+                            placeholder="₹ 0.00"
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-400 mb-1">Notes</label>
+                        <textarea
+                            name="notes"
+                            value={formData.notes}
+                            onChange={handleChange}
+                            placeholder="Add any specific details..."
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none h-24 resize-none"
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3 rounded-xl shadow-lg transform transition hover:-translate-y-0.5"
+                    >
+                        Save Service Record
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default AddServiceForm;

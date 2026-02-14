@@ -4,6 +4,8 @@ import VehicleCard from './VehicleCard';
 import AddEntryForm from './AddEntryForm';
 import AddVehicleForm from './AddVehicleForm';
 import HistoryTable from './HistoryTable';
+import ServiceHistoryTable from './ServiceHistoryTable';
+import AddServiceForm from './AddServiceForm';
 
 const Dashboard = () => {
     const { vehicles, getVehicleEntries, addVehicle } = useFuel();
@@ -11,7 +13,10 @@ const Dashboard = () => {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
     const [editingEntry, setEditingEntry] = useState(null);
+    const [editingService, setEditingService] = useState(null);
     const [viewHistoryId, setViewHistoryId] = useState(null);
+    const [historyType, setHistoryType] = useState('fuel'); // 'fuel' or 'service'
+    const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
 
     const handleAddEntry = (vehicleId) => {
         setSelectedVehicleId(vehicleId);
@@ -25,8 +30,25 @@ const Dashboard = () => {
         setIsAddModalOpen(true);
     };
 
-    const handleViewHistory = (vehicleId) => {
-        setViewHistoryId(viewHistoryId === vehicleId ? null : vehicleId);
+    const handleViewHistory = (vehicleId, type = 'fuel') => {
+        if (viewHistoryId === vehicleId && historyType === type) {
+            setViewHistoryId(null);
+        } else {
+            setViewHistoryId(vehicleId);
+            setHistoryType(type);
+        }
+    };
+
+    const handleAddService = (vehicleId) => {
+        setSelectedVehicleId(vehicleId);
+        setEditingService(null);
+        setIsAddServiceModalOpen(true);
+    };
+
+    const handleEditService = (entry, vehicleId) => {
+        setSelectedVehicleId(vehicleId);
+        setEditingService(entry);
+        setIsAddServiceModalOpen(true);
     };
 
     return (
@@ -85,9 +107,13 @@ const Dashboard = () => {
                                         e.stopPropagation();
                                         handleAddEntry(vehicle.id);
                                     }}
-                                    onViewHistory={(e) => {
+                                    onViewHistory={(e, type) => {
                                         e.stopPropagation();
-                                        handleViewHistory(vehicle.id);
+                                        handleViewHistory(vehicle.id, type);
+                                    }}
+                                    onAddService={(e) => {
+                                        e.stopPropagation();
+                                        handleAddService(vehicle.id);
                                     }}
                                 />
                             </div>
@@ -98,18 +124,43 @@ const Dashboard = () => {
 
             {viewHistoryId && (
                 <section className="animate-fade-in-up">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-2xl font-bold text-white border-l-4 border-cyan-500 pl-4">
-                            History: {vehicles.find(v => v.id === viewHistoryId)?.name}
-                        </h2>
-                        <button onClick={() => setViewHistoryId(null)} className="text-slate-400 hover:text-white">
-                            Close
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                        <div className="flex items-center gap-4">
+                            <h2 className={`text-2xl font-bold text-white border-l-4 ${historyType === 'fuel' ? 'border-cyan-500' : 'border-emerald-500'} pl-4`}>
+                                {historyType === 'fuel' ? 'Fuel History' : 'Service History'}: {vehicles.find(v => v.id === viewHistoryId)?.name}
+                            </h2>
+                        </div>
+                        <div className="flex bg-slate-800 p-1 rounded-xl border border-slate-700 w-full md:w-auto">
+                            <button
+                                onClick={() => setHistoryType('fuel')}
+                                className={`flex-1 md:px-4 py-2 rounded-lg text-sm font-bold transition-all ${historyType === 'fuel' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                            >
+                                Fuel
+                            </button>
+                            <button
+                                onClick={() => setHistoryType('service')}
+                                className={`flex-1 md:px-4 py-2 rounded-lg text-sm font-bold transition-all ${historyType === 'service' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                            >
+                                Service
+                            </button>
+                            <button onClick={() => setViewHistoryId(null)} className="ml-2 p-2 text-slate-400 hover:text-white md:hidden font-bold">✕</button>
+                        </div>
+                        <button onClick={() => setViewHistoryId(null)} className="hidden md:block text-slate-400 hover:text-white font-bold transition-colors">
+                            Close History
                         </button>
                     </div>
-                    <HistoryTable
-                        vehicleId={viewHistoryId}
-                        onEdit={(entry) => handleEditEntry(entry, viewHistoryId)}
-                    />
+
+                    {historyType === 'fuel' ? (
+                        <HistoryTable
+                            vehicleId={viewHistoryId}
+                            onEdit={(entry) => handleEditEntry(entry, viewHistoryId)}
+                        />
+                    ) : (
+                        <ServiceHistoryTable
+                            vehicleId={viewHistoryId}
+                            onEdit={(entry) => handleEditService(entry, viewHistoryId)}
+                        />
+                    )}
                 </section>
             )}
 
@@ -124,6 +175,14 @@ const Dashboard = () => {
             {isAddVehicleModalOpen && (
                 <AddVehicleForm
                     onClose={() => setIsAddVehicleModalOpen(false)}
+                />
+            )}
+
+            {isAddServiceModalOpen && (
+                <AddServiceForm
+                    vehicleId={selectedVehicleId}
+                    initialData={editingService}
+                    onClose={() => setIsAddServiceModalOpen(false)}
                 />
             )}
         </div>

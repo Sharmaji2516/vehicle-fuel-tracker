@@ -20,21 +20,40 @@ const VehicleCard = ({ vehicle, entries, onAddEntry, onViewHistory }) => {
                     </span>
                 </div>
                 <div className="flex gap-2">
-                    <button
-                        onClick={onViewHistory}
-                        className="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 rounded-full transition-colors text-sm font-medium"
-                    >
-                        History
-                    </button>
-                    <button
-                        onClick={(e) => onAddEntry(e, vehicle.id)}
-                        className="bg-indigo-600 hover:bg-indigo-500 text-white p-2 rounded-full transition-colors shadow-lg shadow-indigo-500/30"
-                        title="Add Fuel Entry"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                        </svg>
-                    </button>
+                    <div className="flex bg-slate-700/50 rounded-full p-1 border border-slate-600">
+                        <button
+                            onClick={(e) => onViewHistory(e, 'fuel')}
+                            className="px-3 py-1.5 rounded-full transition-all text-[11px] font-bold uppercase tracking-tight hover:bg-indigo-600 hover:text-white text-slate-300"
+                        >
+                            Fuel
+                        </button>
+                        <button
+                            onClick={(e) => onViewHistory(e, 'service')}
+                            className="px-3 py-1.5 rounded-full transition-all text-[11px] font-bold uppercase tracking-tight hover:bg-emerald-600 hover:text-white text-slate-300"
+                        >
+                            Service
+                        </button>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <button
+                            onClick={(e) => onAddEntry(e, vehicle.id)}
+                            className="bg-indigo-600 hover:bg-indigo-500 text-white p-1.5 rounded-lg transition-colors shadow-lg shadow-indigo-500/30"
+                            title="Add Fuel"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                            </svg>
+                        </button>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onAddService(vehicle.id); }}
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white p-1.5 rounded-lg transition-colors shadow-lg shadow-emerald-500/30"
+                            title="Add Service"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 

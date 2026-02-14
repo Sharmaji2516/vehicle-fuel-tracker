@@ -20,6 +20,7 @@ export const FuelProvider = ({ children }) => {
     // Initialize with empty arrays to avoid showing local data to wrong user
     const [vehicles, setVehicles] = useState([]);
     const [entries, setEntries] = useState([]);
+    const [serviceEntries, setServiceEntries] = useState([]);
 
     // Sync Vehicles from Firestore filtered by User
     useEffect(() => {
@@ -33,92 +34,72 @@ export const FuelProvider = ({ children }) => {
             },
             (error) => {
                 console.error("Firestore Vehicles Error:", error);
-                if (error.code === 'permission-denied') {
-                    console.error("Make sure your Firestore rules allow reading from 'vehicles' where userId matches.");
-                }
             }
         );
         return () => unsubscribe();
     }, [user]);
 
-    // Sync Entries from Firestore filtered by User
+    // Sync Fuel Entries
     useEffect(() => {
         if (!isConfigured || !user) return;
 
         const q = query(collection(db, "entries"), where("userId", "==", user.uid));
-        const unsubscribe = onSnapshot(q,
-            (snapshot) => {
-                const remoteEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                setEntries(remoteEntries);
-            },
-            (error) => {
-                console.error("Firestore Entries Error:", error);
-                if (error.code === 'permission-denied') {
-                    console.error("Make sure your Firestore rules allow reading from 'entries' where userId matches.");
-                }
-            }
-        );
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            setEntries(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
+        return () => unsubscribe();
+    }, [user]);
 
+    // Sync Service Entries
+    useEffect(() => {
+        if (!isConfigured || !user) return;
+
+        const q = query(collection(db, "serviceEntries"), where("userId", "==", user.uid));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            setServiceEntries(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
         return () => unsubscribe();
     }, [user]);
 
     const addVehicle = async (vehicle) => {
         if (!user) return;
         const newVehicle = { ...vehicle, id: Date.now().toString(), userId: user.uid };
-
-        // Optimistic update
         setVehicles(prev => [...prev, newVehicle]);
-
-        if (isConfigured) {
-            try {
-                await setDoc(doc(db, "vehicles", newVehicle.id), newVehicle);
-                console.log("Vehicle saved to cloud");
-            } catch (e) {
-                console.error("Error adding vehicle to cloud: ", e);
-                alert("Error saving vehicle to cloud! Check your internet or Firebase permissions.");
-            }
-        }
+        if (isConfigured) await setDoc(doc(db, "vehicles", newVehicle.id), newVehicle);
     };
 
     const addEntry = async (entry) => {
         if (!user) return;
         const newEntry = { ...entry, id: Date.now().toString(), userId: user.uid };
-
-        // Optimistic update
         setEntries(prev => [...prev, newEntry]);
-
-        if (isConfigured) {
-            try {
-                await setDoc(doc(db, "entries", newEntry.id), newEntry);
-                console.log("Entry saved to cloud");
-            } catch (e) {
-                console.error("Error adding entry to cloud: ", e);
-                alert("Error saving entry! Check if your Firebase Database Rules allow writing.");
-            }
-        }
+        if (isConfigured) await setDoc(doc(db, "entries", newEntry.id), newEntry);
     };
 
     const deleteEntry = async (id) => {
         setEntries(prev => prev.filter(e => e.id !== id));
-        if (isConfigured) {
-            try {
-                await deleteDoc(doc(db, "entries", id));
-            } catch (e) {
-                console.error("Error deleting from cloud:", e);
-            }
-        }
-    }
+        if (isConfigured) await deleteDoc(doc(db, "entries", id));
+    };
 
     const editEntry = async (updatedEntry) => {
         setEntries(prev => prev.map(e => e.id === updatedEntry.id ? updatedEntry : e));
+        if (isConfigured) await setDoc(doc(db, "entries", updatedEntry.id), { ...updatedEntry, userId: user.uid });
+    };
 
-        if (isConfigured) {
-            try {
-                await setDoc(doc(db, "entries", updatedEntry.id), { ...updatedEntry, userId: user.uid });
-            } catch (e) {
-                console.error("Error updating entry in cloud:", e);
-            }
-        }
+    const addServiceEntry = async (entry) => {
+        if (!user) return;
+        const newEntry = { ...entry, id: Date.now().toString(), userId: user.uid };
+        setServiceEntries(prev => [...prev, newEntry]);
+        if (isConfigured) await setDoc(doc(db, "serviceEntries", newEntry.id), newEntry);
+    };
+
+    const deleteServiceEntry = async (id) => {
+        setServiceEntries(prev => prev.filter(e => e.id !== id));
+        if (isConfigured) await deleteDoc(doc(db, "serviceEntries", id));
+    };
+
+    const editServiceEntry = async (updatedEntry) => {
+        setServiceEntries(prev => prev.map(e => e.id === updatedEntry.id ? updatedEntry : e));
+        if (isConfigured) await setDoc(doc(db, "serviceEntries", updatedEntry.id), { ...updatedEntry, userId: user.uid });
     };
 
     const getVehicleEntries = (vehicleId) => {
@@ -127,14 +108,25 @@ export const FuelProvider = ({ children }) => {
             .sort((a, b) => new Date(b.date) - new Date(a.date));
     };
 
+    const getVehicleServiceEntries = (vehicleId) => {
+        return serviceEntries
+            .filter(e => e.vehicleId === vehicleId)
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+    };
+
     const value = {
         vehicles,
         entries,
+        serviceEntries,
         addVehicle,
         addEntry,
         deleteEntry,
         editEntry,
-        getVehicleEntries
+        getVehicleEntries,
+        addServiceEntry,
+        deleteServiceEntry,
+        editServiceEntry,
+        getVehicleServiceEntries
     };
 
     return <FuelContext.Provider value={value}>{children}</FuelContext.Provider>;
