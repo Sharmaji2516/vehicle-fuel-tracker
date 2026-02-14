@@ -57,10 +57,13 @@ const Dashboard = () => {
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-4">
                         <h2 className="text-2xl font-bold text-white border-l-4 border-indigo-500 pl-4">My Vehicles</h2>
-                        <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                            <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold hidden sm:inline">Cloud Synced</span>
-                            <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold sm:hidden">Synced</span>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold hidden sm:inline">Cloud Synced</span>
+                                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold sm:hidden">Synced</span>
+                            </div>
+                            <span className="text-[10px] text-indigo-400 font-mono bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">v1.2 - Payment Modes Ready</span>
                         </div>
                     </div>
                     <div className="flex gap-2">
