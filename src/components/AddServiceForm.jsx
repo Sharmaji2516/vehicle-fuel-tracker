@@ -12,6 +12,7 @@ const AddServiceForm = ({ vehicleId, onClose, initialData }) => {
         notes: '',
         cost: ''
     });
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -20,19 +21,28 @@ const AddServiceForm = ({ vehicleId, onClose, initialData }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const entryData = {
-            ...formData,
-            vehicleId,
-            odometer: parseFloat(formData.odometer),
-            cost: parseFloat(formData.cost) || 0
-        };
+        if (isSaving) return;
 
-        if (initialData) {
-            await editServiceEntry({ ...entryData, id: initialData.id });
-        } else {
-            await addServiceEntry(entryData);
+        setIsSaving(true);
+        try {
+            const entryData = {
+                ...formData,
+                vehicleId,
+                odometer: parseFloat(formData.odometer),
+                cost: parseFloat(formData.cost) || 0
+            };
+
+            if (initialData) {
+                await editServiceEntry({ ...entryData, id: initialData.id });
+            } else {
+                await addServiceEntry(entryData);
+            }
+            onClose();
+        } catch (error) {
+            console.error("Error saving service:", error);
+            alert("Failed to save service. Please try again.");
+            setIsSaving(false);
         }
-        onClose();
     };
 
     return (
@@ -108,9 +118,10 @@ const AddServiceForm = ({ vehicleId, onClose, initialData }) => {
 
                     <button
                         type="submit"
-                        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3 rounded-xl shadow-lg transform transition hover:-translate-y-0.5"
+                        disabled={isSaving}
+                        className={`w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3 rounded-xl shadow-lg transform transition hover:-translate-y-0.5 ${isSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
                     >
-                        Save Service Record
+                        {isSaving ? 'Saving...' : (initialData ? 'Update Service Record' : 'Save Service Record')}
                     </button>
                 </form>
             </div>
