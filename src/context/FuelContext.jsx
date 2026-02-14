@@ -122,7 +122,9 @@ export const FuelProvider = ({ children }) => {
     };
 
     const getVehicleEntries = (vehicleId) => {
-        return entries.filter(e => e.vehicleId === vehicleId).sort((a, b) => new Date(b.date) - new Date(a.date));
+        return entries
+            .filter(e => e.vehicleId === vehicleId)
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
     };
 
     const value = {

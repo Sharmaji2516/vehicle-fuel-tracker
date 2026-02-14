@@ -1,11 +1,12 @@
 import React from 'react';
-import { calculateMileage, calculateAverageMileage, calculateTotalSpent } from '../utils/calculations';
+import { calculateMileage, calculateAverageMileage, calculateTotalSpent, calculateAllMileages } from '../utils/calculations';
 
 const VehicleCard = ({ vehicle, entries, onAddEntry, onViewHistory }) => {
-    const sortedEntries = entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const sortedEntries = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
     const lastMileage = calculateMileage(sortedEntries);
     const avgMileage = calculateAverageMileage(sortedEntries);
     const totalSpent = calculateTotalSpent(entries);
+    const recentMileages = calculateAllMileages(entries).slice(0, 3);
 
     return (
         <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
@@ -46,6 +47,21 @@ const VehicleCard = ({ vehicle, entries, onAddEntry, onViewHistory }) => {
                     <p className="text-slate-400 text-xs">Avg Efficiency</p>
                     <p className="text-2xl font-bold text-emerald-400">{avgMileage} <span className="text-sm text-slate-500">km/l</span></p>
                 </div>
+
+                {recentMileages.length > 0 && (
+                    <div className="col-span-2 bg-slate-700/20 p-3 rounded-xl">
+                        <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-2">Recent Mileages</p>
+                        <div className="flex gap-2">
+                            {recentMileages.map((m, idx) => (
+                                <div key={idx} className="flex-1 bg-slate-800/50 p-2 rounded-lg border border-slate-700 text-center">
+                                    <p className="text-cyan-400 font-bold text-sm">{m.mileage}</p>
+                                    <p className="text-[9px] text-slate-500">{new Date(m.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <div className="col-span-2 bg-slate-700/30 p-3 rounded-xl flex justify-between items-center">
                     <div>
                         <p className="text-slate-400 text-xs">Total Spent</p>

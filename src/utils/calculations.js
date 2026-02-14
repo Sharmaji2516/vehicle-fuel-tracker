@@ -34,3 +34,27 @@ export const calculateAverageMileage = (entries) => {
 export const calculateTotalSpent = (entries) => {
     return entries.reduce((acc, curr) => acc + Number(curr.totalCost), 0).toFixed(2);
 };
+export const calculateAllMileages = (entries) => {
+    if (!entries || entries.length < 2) return [];
+
+    // Sort by odometer chronological (ascending)
+    const sorted = [...entries].sort((a, b) => a.odometer - b.odometer);
+    const results = [];
+
+    for (let i = 1; i < sorted.length; i++) {
+        const current = sorted[i];
+        const previous = sorted[i - 1];
+        const distance = current.odometer - previous.odometer;
+        const fuel = current.liters;
+
+        if (fuel > 0) {
+            results.push({
+                date: current.date,
+                mileage: (distance / fuel).toFixed(2)
+            });
+        }
+    }
+
+    // Return descending by date (most recent first)
+    return results.sort((a, b) => new Date(b.date) - new Date(a.date));
+};
