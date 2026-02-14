@@ -1,5 +1,5 @@
 import React from 'react';
-import { calculateMileage, calculateAverageMileage, calculateTotalSpent, calculateAllMileages } from '../utils/calculations';
+import { calculateMileage, calculateAverageMileage, calculateTotalSpent, calculateAllMileages, formatDate } from '../utils/calculations';
 
 const VehicleCard = ({ vehicle, entries, onAddEntry, onViewHistory }) => {
     const sortedEntries = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -55,7 +55,7 @@ const VehicleCard = ({ vehicle, entries, onAddEntry, onViewHistory }) => {
                             {recentMileages.map((m, idx) => (
                                 <div key={idx} className="flex-1 bg-slate-800/50 p-2 rounded-lg border border-slate-700 text-center">
                                     <p className="text-cyan-400 font-bold text-sm">{m.mileage}</p>
-                                    <p className="text-[9px] text-slate-500">{new Date(m.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
+                                    <p className="text-[9px] text-slate-500">{formatDate(m.date)}</p>
                                 </div>
                             ))}
                         </div>
@@ -69,7 +69,7 @@ const VehicleCard = ({ vehicle, entries, onAddEntry, onViewHistory }) => {
                     </div>
                     <div className="text-right">
                         <p className="text-slate-400 text-xs">Last Fill</p>
-                        <p className="text-sm text-slate-300">{sortedEntries[0] ? new Date(sortedEntries[0].date).toLocaleDateString() : 'N/A'}</p>
+                        <p className="text-sm text-slate-300">{formatDate(sortedEntries[0]?.date)}</p>
                     </div>
                 </div>
             </div>

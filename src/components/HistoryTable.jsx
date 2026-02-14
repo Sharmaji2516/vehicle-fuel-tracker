@@ -1,5 +1,5 @@
-import React from 'react';
 import { useFuel } from '../context/FuelContext';
+import { formatDate } from '../utils/calculations';
 
 const HistoryTable = ({ vehicleId, onEdit }) => {
     const { getVehicleEntries, deleteEntry } = useFuel();
@@ -52,7 +52,7 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
                         {entriesWithMileage.map((entry) => (
                             <tr key={entry.id} className="hover:bg-slate-700/30 transition-colors border-b border-slate-700 last:border-0">
                                 <td className="px-6 py-4 font-medium text-white">
-                                    {new Date(entry.date).toLocaleDateString()}
+                                    {formatDate(entry.date)}
                                 </td>
                                 <td className="px-6 py-4">{entry.odometer} km</td>
                                 <td className="px-6 py-4 text-indigo-400 font-medium">{entry.tripDistance}</td>
@@ -90,7 +90,7 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
                     <div key={entry.id} className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg flex flex-col gap-3">
                         <div className="flex justify-between items-start">
                             <div className="flex flex-col">
-                                <span className="text-white font-bold text-lg">{new Date(entry.date).toLocaleDateString()}</span>
+                                <span className="text-white font-bold text-lg">{formatDate(entry.date)}</span>
                                 <span className="text-slate-400 text-sm">{entry.odometer} km</span>
                             </div>
                             <span className="text-emerald-400 font-bold text-xl">₹{entry.totalCost}</span>
