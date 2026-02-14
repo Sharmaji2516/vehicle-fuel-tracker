@@ -25,6 +25,7 @@ const ServiceHistoryTable = ({ vehicleId, onEdit }) => {
                             <th className="px-6 py-4">Odometer</th>
                             <th className="px-6 py-4">Service Type</th>
                             <th className="px-6 py-4">Cost</th>
+                            <th className="px-6 py-4">Mode</th>
                             <th className="px-6 py-4">Notes</th>
                             <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
@@ -36,6 +37,14 @@ const ServiceHistoryTable = ({ vehicleId, onEdit }) => {
                                 <td className="px-6 py-4">{entry.odometer} km</td>
                                 <td className="px-6 py-4 text-emerald-400 font-medium">{entry.serviceType}</td>
                                 <td className="px-6 py-4 font-bold text-slate-200">₹{entry.cost}</td>
+                                <td className="px-6 py-4">
+                                    <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase ${entry.paymentMode === 'Online'
+                                            ? 'bg-blue-900/40 text-blue-400 border border-blue-800/50'
+                                            : 'bg-amber-900/40 text-amber-400 border border-amber-800/50'
+                                        }`}>
+                                        {entry.paymentMode || 'Cash'}
+                                    </span>
+                                </td>
                                 <td className="px-6 py-4 text-slate-400 italic">
                                     <div className="max-w-xs truncate" title={entry.notes}>{entry.notes || '--'}</div>
                                 </td>
@@ -59,6 +68,13 @@ const ServiceHistoryTable = ({ vehicleId, onEdit }) => {
                                 <span className="text-slate-400 text-sm">{entry.odometer} km</span>
                             </div>
                             <span className="text-emerald-400 font-bold text-xl">₹{entry.cost}</span>
+                        </div>
+                        <div className="flex justify-between items-center bg-slate-700/30 px-3 py-1 rounded-lg border border-slate-700/50">
+                            <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Payment Mode</span>
+                            <span className={`text-[10px] font-bold uppercase ${entry.paymentMode === 'Online' ? 'text-blue-400' : 'text-amber-400'
+                                }`}>
+                                {entry.paymentMode === 'Online' ? '💳 Online' : '💵 Cash'}
+                            </span>
                         </div>
                         <div className="bg-slate-700/30 p-2 rounded-lg border border-slate-700/50">
                             <p className="text-indigo-300 font-bold text-sm mb-1">{entry.serviceType}</p>

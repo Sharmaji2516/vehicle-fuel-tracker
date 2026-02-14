@@ -10,7 +10,8 @@ const AddEntryForm = ({ vehicleId, onClose, initialData }) => {
         odometer: '',
         liters: '',
         price: '', // Price per liter
-        totalCost: ''
+        totalCost: '',
+        paymentMode: 'Cash'
     });
 
     const handleChange = (e) => {
@@ -129,6 +130,25 @@ const AddEntryForm = ({ vehicleId, onClose, initialData }) => {
                             placeholder="₹ 0.00"
                             className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                         />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-400 mb-2">Payment Mode</label>
+                        <div className="flex gap-4">
+                            {['Cash', 'Online'].map(mode => (
+                                <button
+                                    key={mode}
+                                    type="button"
+                                    onClick={() => setFormData(prev => ({ ...prev, paymentMode: mode }))}
+                                    className={`flex-1 py-3 rounded-xl border font-bold transition-all ${formData.paymentMode === mode
+                                        ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg'
+                                        : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
+                                        }`}
+                                >
+                                    {mode === 'Cash' ? '💵 Cash' : '💳 Online'}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     <button

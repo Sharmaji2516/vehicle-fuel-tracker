@@ -45,6 +45,7 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
                             <th className="px-6 py-4">Efficiency</th>
                             <th className="px-6 py-4">Price/L</th>
                             <th className="px-6 py-4">Total</th>
+                            <th className="px-6 py-4">Mode</th>
                             <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -60,6 +61,14 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
                                 <td className="px-6 py-4 font-bold text-cyan-400">{entry.efficiency}</td>
                                 <td className="px-6 py-4">₹{entry.price}</td>
                                 <td className="px-6 py-4 font-bold text-emerald-400">₹{entry.totalCost}</td>
+                                <td className="px-6 py-4">
+                                    <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase ${entry.paymentMode === 'Online'
+                                            ? 'bg-blue-900/40 text-blue-400 border border-blue-800/50'
+                                            : 'bg-amber-900/40 text-amber-400 border border-amber-800/50'
+                                        }`}>
+                                        {entry.paymentMode || 'Cash'}
+                                    </span>
+                                </td>
                                 <td className="px-6 py-4 text-right flex justify-end gap-2">
                                     <button
                                         onClick={() => onEdit(entry)}
@@ -94,6 +103,13 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
                                 <span className="text-slate-400 text-sm">{entry.odometer} km</span>
                             </div>
                             <span className="text-emerald-400 font-bold text-xl">₹{entry.totalCost}</span>
+                        </div>
+                        <div className="flex justify-between items-center bg-slate-700/30 px-3 py-1 rounded-lg border border-slate-700/50">
+                            <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Payment Mode</span>
+                            <span className={`text-[10px] font-bold uppercase ${entry.paymentMode === 'Online' ? 'text-blue-400' : 'text-amber-400'
+                                }`}>
+                                {entry.paymentMode === 'Online' ? '💳 Online' : '💵 Cash'}
+                            </span>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 text-sm text-slate-400 border-t border-slate-700/50 pt-3">
