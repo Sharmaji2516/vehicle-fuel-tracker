@@ -18,9 +18,18 @@ export const FuelProvider = ({ children }) => {
     // primarily driven by the firestore listener if connected.
 
     // Initialize with empty arrays to avoid showing local data to wrong user
-    const [vehicles, setVehicles] = useState([]);
-    const [entries, setEntries] = useState([]);
-    const [serviceEntries, setServiceEntries] = useState([]);
+    const [vehicles, setVehicles] = useState(() => {
+        const saved = localStorage.getItem('vehicles');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [entries, setEntries] = useState(() => {
+        const saved = localStorage.getItem('entries');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [serviceEntries, setServiceEntries] = useState(() => {
+        const saved = localStorage.getItem('serviceEntries');
+        return saved ? JSON.parse(saved) : [];
+    });
 
     // Sync Vehicles from Firestore filtered by User
     useEffect(() => {
@@ -50,13 +59,27 @@ export const FuelProvider = ({ children }) => {
         return () => unsubscribe();
     }, [user]);
 
+    // LocalStorage sync as fallback/cache
+    useEffect(() => {
+        localStorage.setItem('vehicles', JSON.stringify(vehicles));
+    }, [vehicles]);
+
+    useEffect(() => {
+        localStorage.setItem('entries', JSON.stringify(entries));
+    }, [entries]);
+
+    useEffect(() => {
+        localStorage.setItem('serviceEntries', JSON.stringify(serviceEntries));
+    }, [serviceEntries]);
+
     // Sync Service Entries
     useEffect(() => {
         if (!isConfigured || !user) return;
 
         const q = query(collection(db, "serviceEntries"), where("userId", "==", user.uid));
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            setServiceEntries(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            const remoteData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            if (remoteData.length > 0) setServiceEntries(remoteData);
         });
         return () => unsubscribe();
     }, [user]);

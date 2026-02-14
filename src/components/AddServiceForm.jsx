@@ -9,7 +9,6 @@ const AddServiceForm = ({ vehicleId, onClose, initialData }) => {
         date: new Date().toISOString().split('T')[0],
         odometer: '',
         serviceType: '',
-        notes: '',
         cost: '',
         paymentMode: 'Cash'
     });
@@ -100,16 +99,6 @@ const AddServiceForm = ({ vehicleId, onClose, initialData }) => {
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-slate-400 mb-1">Notes</label>
-                        <textarea
-                            name="notes"
-                            value={formData.notes}
-                            onChange={handleChange}
-                            placeholder="Add any specific details..."
-                            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none h-24 resize-none"
-                        />
-                    </div>
 
                     <div>
                         <label className="block text-sm font-medium text-slate-400 mb-2">Payment Mode</label>

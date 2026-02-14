@@ -63,7 +63,7 @@ const Dashboard = () => {
                                 <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold hidden sm:inline">Cloud Synced</span>
                                 <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold sm:hidden">Synced</span>
                             </div>
-                            <span className="text-[10px] text-indigo-400 font-mono bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">v1.2 - Payment Modes Ready</span>
+                            <span className="text-[10px] text-indigo-400 font-mono bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">v1.3 - UI Optimized</span>
                         </div>
                     </div>
                     <div className="flex gap-2">
