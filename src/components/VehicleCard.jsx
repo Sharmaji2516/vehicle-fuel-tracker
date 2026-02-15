@@ -98,13 +98,16 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
                     <p className="text-slate-400 text-xs mb-1">Days Since Last Service</p>
                     {daysSinceService !== null ? (
                         <div className="flex items-baseline gap-2">
-                            <p className={`text-2xl font-bold ${daysSinceService <= 180 ? 'text-emerald-400' :
-                                daysSinceService <= 300 ? 'text-yellow-400' :
+                            <p className={`text-2xl font-bold ${daysSinceService <= 90 ? 'text-emerald-400' :
+                                daysSinceService <= 150 ? 'text-yellow-400' :
                                     'text-rose-400'
                                 }`}>
                                 {daysSinceService}
                             </p>
                             <span className="text-sm text-slate-500">days ago</span>
+                            {daysSinceService > 150 && (
+                                <span className="text-rose-400 text-lg animate-pulse" title="Service Overdue!">⚠️</span>
+                            )}
                         </div>
                     ) : (
                         <p className="text-slate-500 text-sm italic">No service records</p>
