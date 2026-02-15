@@ -1,5 +1,5 @@
 import React from 'react';
-import { calculateMileage, calculateAverageMileage, calculateTotalSpent, calculateAllMileages, formatDate } from '../utils/calculations';
+import { calculateMileage, calculateAverageMileage, calculateTotalSpent, calculateAllMileages, formatDate, calculateDaysSinceLastService } from '../utils/calculations';
 
 const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onViewHistory, onAddService }) => {
     const sortedEntries = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -7,6 +7,7 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
     const avgMileage = calculateAverageMileage(sortedEntries);
     const totalSpent = calculateTotalSpent(entries, serviceEntries);
     const recentMileages = calculateAllMileages(entries).slice(0, 3);
+    const daysSinceService = calculateDaysSinceLastService(serviceEntries);
 
     return (
         <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
@@ -90,6 +91,24 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
                         <p className="text-slate-400 text-xs">Last Fill</p>
                         <p className="text-sm text-slate-300">{formatDate(sortedEntries[0]?.date)}</p>
                     </div>
+                </div>
+
+                {/* Days Since Last Service */}
+                <div className="col-span-2 bg-slate-700/30 p-3 rounded-xl">
+                    <p className="text-slate-400 text-xs mb-1">Days Since Last Service</p>
+                    {daysSinceService !== null ? (
+                        <div className="flex items-baseline gap-2">
+                            <p className={`text-2xl font-bold ${daysSinceService < 90 ? 'text-emerald-400' :
+                                    daysSinceService < 180 ? 'text-yellow-400' :
+                                        'text-rose-400'
+                                }`}>
+                                {daysSinceService}
+                            </p>
+                            <span className="text-sm text-slate-500">days ago</span>
+                        </div>
+                    ) : (
+                        <p className="text-slate-500 text-sm italic">No service records</p>
+                    )}
                 </div>
             </div>
         </div>

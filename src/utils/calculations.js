@@ -61,6 +61,25 @@ export const calculateAllMileages = (entries) => {
     return results.sort((a, b) => new Date(b.date) - new Date(a.date));
 };
 
+export const calculateDaysSinceLastService = (serviceEntries) => {
+    if (!serviceEntries || serviceEntries.length === 0) return null;
+
+    // Sort by date descending to get the most recent service
+    const sorted = [...serviceEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const lastService = sorted[0];
+
+    if (!lastService || !lastService.date) return null;
+
+    const lastServiceDate = new Date(lastService.date);
+    const today = new Date();
+
+    // Calculate difference in milliseconds and convert to days
+    const diffTime = today - lastServiceDate;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays;
+};
+
 export const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
