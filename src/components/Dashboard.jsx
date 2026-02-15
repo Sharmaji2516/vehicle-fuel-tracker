@@ -7,7 +7,6 @@ import AddVehicleForm from './AddVehicleForm';
 import HistoryTable from './HistoryTable';
 import ServiceHistoryTable from './ServiceHistoryTable';
 import AddServiceForm from './AddServiceForm';
-import UpdateVehicleNumbers from './UpdateVehicleNumbers';
 
 const Dashboard = () => {
     const { user } = useAuth();
@@ -20,7 +19,6 @@ const Dashboard = () => {
     const [viewHistoryId, setViewHistoryId] = useState(null);
     const [historyType, setHistoryType] = useState('fuel'); // 'fuel' or 'service'
     const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
-    const [isUpdateVehicleNumbersOpen, setIsUpdateVehicleNumbersOpen] = useState(false);
 
     const handleAddEntry = (vehicleId) => {
         setSelectedVehicleId(vehicleId);
@@ -195,11 +193,6 @@ const Dashboard = () => {
                 />
             )}
 
-            {isUpdateVehicleNumbersOpen && (
-                <UpdateVehicleNumbers
-                    onClose={() => setIsUpdateVehicleNumbersOpen(false)}
-                />
-            )}
         </div>
     );
 };
