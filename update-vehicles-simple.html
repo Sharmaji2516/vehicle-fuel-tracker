@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Vehicle Numbers</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .container {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        h1 {
+            color: #60a5fa;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        button:disabled {
+            background: #475569;
+            cursor: not-allowed;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #334155;
+        }
+
+        .success {
+            color: #34d399;
+        }
+
+        .error {
+            color: #f87171;
+        }
+
+        .info {
+            color: #60a5fa;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 8px;
+            margin: 5px 0;
+            background: #334155;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚗 Update Vehicle Numbers</h1>
+        <p>This tool will add vehicle numbers to your existing vehicles:</p>
+        <ul>
+            <li><strong>Dzire</strong> → RJ09CC7411</li>
+            <li><strong>Yamaha</strong> → RJ09ZS4743</li>
+            <li><strong>Other vehicle</strong> → RJ09FS3881</li>
+        </ul>
+
+        <button id="updateBtn" onclick="updateVehicles()">Update Vehicle Numbers</button>
+
+        <div id="status"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, getDocs, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDe1wYOkGHwJOqKEjGTbqCQNYOQPgGQjhg",
+            authDomain: "vehicle-fuel-tracker-1e2d1.firebaseapp.com",
+            projectId: "vehicle-fuel-tracker-1e2d1",
+            storageBucket: "vehicle-fuel-tracker-1e2d1.firebasestorage.app",
+            messagingSenderId: "1009893859086",
+            appId: "1:1009893859086:web:f3e9a5e5d8e5e5e5e5e5e5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        window.updateVehicles = async function () {
+            const btn = document.getElementById('updateBtn');
+            const status = document.getElementById('status');
+
+            btn.disabled = true;
+            status.innerHTML = '<p class="info">🔄 Updating vehicles...</p>';
+
+            try {
+                // Check if user is logged in
+                if (!auth.currentUser) {
+                    status.innerHTML = '<p class="error">❌ Please log in to your app first, then come back here.</p>';
+                    btn.disabled = false;
+                    return;
+                }
+
+                const vehicleUpdates = {
+                    'Dzire': 'RJ09CC7411',
+                    'Yamaha': 'RJ09ZS4743',
+                    'FZ': 'RJ09FS3881'  // Assuming third vehicle might be FZ
+                };
+
+                const vehiclesRef = collection(db, 'vehicles');
+                const snapshot = await getDocs(vehiclesRef);
+
+                let updates = [];
+                let messages = [];
+
+                for (const docSnap of snapshot.docs) {
+                    const vehicle = docSnap.data();
+
+                    // Only update vehicles belonging to current user
+                    if (vehicle.userId !== auth.currentUser.uid) continue;
+
+                    for (const [name, number] of Object.entries(vehicleUpdates)) {
+                        if (vehicle.name.toLowerCase().includes(name.toLowerCase())) {
+                            updates.push(
+                                updateDoc(doc(db, 'vehicles', docSnap.id), {
+                                    vehicleNumber: number
+                                })
+                            );
+                            messages.push(`✅ Updated ${vehicle.name} → ${number}`);
+                            break;
+                        }
+                    }
+                }
+
+                if (updates.length === 0) {
+                    status.innerHTML = '<p class="error">⚠️ No matching vehicles found. Make sure vehicle names contain "Dzire", "Yamaha", or "FZ".</p>';
+                } else {
+                    await Promise.all(updates);
+                    status.innerHTML = `
+                        <p class="success">🎉 Successfully updated ${updates.length} vehicle(s)!</p>
+                        ${messages.map(m => `<p class="success">${m}</p>`).join('')}
+                        <p class="info" style="margin-top: 15px;">Refresh your app to see the changes.</p>
+                    `;
+                }
+            } catch (error) {
+                status.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            } finally {
+                btn.disabled = false;
+            }
+        };
+    </script>
+</body>
+
+</html>
