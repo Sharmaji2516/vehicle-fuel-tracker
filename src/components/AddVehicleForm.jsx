@@ -5,6 +5,7 @@ const AddVehicleForm = ({ onClose }) => {
     const { addVehicle } = useFuel();
     const [formData, setFormData] = useState({
         name: '',
+        vehicleNumber: '',
         type: 'Bike', // Default to Bike
         fuelType: 'Petrol' // Default to Petrol
     });
@@ -42,6 +43,19 @@ const AddVehicleForm = ({ onClose }) => {
                             value={formData.name}
                             onChange={handleChange}
                             className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-400 mb-1">Vehicle Number</label>
+                        <input
+                            type="text"
+                            name="vehicleNumber"
+                            required
+                            placeholder="e.g. RJ09CC7411"
+                            value={formData.vehicleNumber}
+                            onChange={(e) => setFormData({ ...formData, vehicleNumber: e.target.value.toUpperCase() })}
+                            className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all uppercase"
                         />
                     </div>
 

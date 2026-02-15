@@ -16,6 +16,9 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
             <div className="flex justify-between items-start mb-4">
                 <div>
                     <h3 className="text-xl font-bold text-white">{vehicle.name}</h3>
+                    {vehicle.vehicleNumber && (
+                        <p className="text-sm font-bold text-cyan-400 tracking-wider mt-1">{vehicle.vehicleNumber}</p>
+                    )}
                     <span className="text-xs font-medium text-slate-400 uppercase tracking-wider bg-slate-700/50 px-2 py-1 rounded mt-1 inline-block">
                         {vehicle.type} • {vehicle.fuelType}
                     </span>
