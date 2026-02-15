@@ -96,12 +96,6 @@ const Dashboard = () => {
                             </svg>
                             Add Vehicle
                         </button>
-                        <button
-                            onClick={() => setIsUpdateVehicleNumbersOpen(true)}
-                            className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition-transform transform hover:-translate-y-0.5 flex items-center gap-2"
-                        >
-                            🔢 Update Numbers
-                        </button>
                     </div>
                 </div>
 
