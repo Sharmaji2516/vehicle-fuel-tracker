@@ -93,8 +93,8 @@ const ServiceHistoryTable = ({ vehicleId, onEdit }) => {
                                 <button onClick={() => setDeleteConfirm(entry)} className="flex-1 bg-slate-700 hover:bg-slate-600 text-rose-300 py-2 rounded-lg text-sm font-medium transition-colors">Delete</button>
                             </div>
                         </div>
-                    ))
-            </div>
+                    ))}
+                </div>
             </div>
 
             <ConfirmDialog
