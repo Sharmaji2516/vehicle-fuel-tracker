@@ -7,6 +7,7 @@ import AddVehicleForm from './AddVehicleForm';
 import HistoryTable from './HistoryTable';
 import ServiceHistoryTable from './ServiceHistoryTable';
 import AddServiceForm from './AddServiceForm';
+import UpdateVehicleNumbers from './UpdateVehicleNumbers';
 
 const Dashboard = () => {
     const { user } = useAuth();
@@ -19,6 +20,7 @@ const Dashboard = () => {
     const [viewHistoryId, setViewHistoryId] = useState(null);
     const [historyType, setHistoryType] = useState('fuel'); // 'fuel' or 'service'
     const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
+    const [isUpdateVehicleNumbersOpen, setIsUpdateVehicleNumbersOpen] = useState(false);
 
     const handleAddEntry = (vehicleId) => {
         setSelectedVehicleId(vehicleId);
@@ -93,6 +95,12 @@ const Dashboard = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                             </svg>
                             Add Vehicle
+                        </button>
+                        <button
+                            onClick={() => setIsUpdateVehicleNumbersOpen(true)}
+                            className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition-transform transform hover:-translate-y-0.5 flex items-center gap-2"
+                        >
+                            🔢 Update Numbers
                         </button>
                     </div>
                 </div>
@@ -190,6 +198,12 @@ const Dashboard = () => {
                     vehicleId={selectedVehicleId}
                     initialData={editingService}
                     onClose={() => setIsAddServiceModalOpen(false)}
+                />
+            )}
+
+            {isUpdateVehicleNumbersOpen && (
+                <UpdateVehicleNumbers
+                    onClose={() => setIsUpdateVehicleNumbersOpen(false)}
                 />
             )}
         </div>

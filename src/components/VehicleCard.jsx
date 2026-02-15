@@ -1,13 +1,18 @@
 import React from 'react';
-import { calculateMileage, calculateAverageMileage, calculateTotalSpent, calculateAllMileages, formatDate, calculateDaysSinceLastService } from '../utils/calculations';
+import { calculateMileage, calculateAverageMileage, calculateTotalSpent, calculateAllMileages, formatDate, calculateDaysSinceLastService, calculateFuelCost, calculateServiceCost } from '../utils/calculations';
 
 const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onViewHistory, onAddService }) => {
     const sortedEntries = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
     const lastMileage = calculateMileage(sortedEntries);
     const avgMileage = calculateAverageMileage(sortedEntries);
     const totalSpent = calculateTotalSpent(entries, serviceEntries);
+    const fuelCost = calculateFuelCost(entries);
+    const serviceCost = calculateServiceCost(serviceEntries);
     const recentMileages = calculateAllMileages(entries).slice(0, 3);
     const daysSinceService = calculateDaysSinceLastService(serviceEntries);
+
+    // Debug: Log vehicle data to see if vehicleNumber exists
+    console.log('Vehicle data:', vehicle.name, 'vehicleNumber:', vehicle.vehicleNumber);
 
     return (
         <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
@@ -85,12 +90,28 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
                     </div>
                 )}
 
+                {/* Cost Breakdown */}
+                <div className="col-span-2 bg-slate-700/30 p-3 rounded-xl">
+                    <p className="text-slate-400 text-xs mb-2">Cost Breakdown</p>
+                    <div className="grid grid-cols-3 gap-2">
+                        <div className="text-center">
+                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Fuel</p>
+                            <p className="text-sm font-bold text-blue-400">₹{fuelCost}</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Service</p>
+                            <p className="text-sm font-bold text-emerald-400">₹{serviceCost}</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Total</p>
+                            <p className="text-sm font-bold text-rose-400">₹{totalSpent}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Last Fill Date */}
                 <div className="col-span-2 bg-slate-700/30 p-3 rounded-xl flex justify-between items-center">
                     <div>
-                        <p className="text-slate-400 text-xs">Total Spent</p>
-                        <p className="text-lg font-bold text-rose-400">₹{totalSpent}</p>
-                    </div>
-                    <div className="text-right">
                         <p className="text-slate-400 text-xs">Last Fill</p>
                         <p className="text-sm text-slate-300">{formatDate(sortedEntries[0]?.date)}</p>
                     </div>
