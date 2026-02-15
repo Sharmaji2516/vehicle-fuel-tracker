@@ -2,6 +2,7 @@ import React from 'react';
 import { FuelProvider } from './context/FuelContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import Login from './components/Login';
@@ -28,11 +29,13 @@ const AppContent = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <NotificationProvider>
-        <AppContent />
-      </NotificationProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <NotificationProvider>
+          <AppContent />
+        </NotificationProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

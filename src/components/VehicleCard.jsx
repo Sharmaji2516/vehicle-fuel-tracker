@@ -15,30 +15,30 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
     console.log('Vehicle data:', vehicle.name, 'vehicleNumber:', vehicle.vehicleNumber);
 
     return (
-        <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
+        <div className="bg-gray-50 backdrop-blur-md border border-gray-200 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
 
             <div className="flex justify-between items-start mb-4">
                 <div>
-                    <h3 className="text-xl font-bold text-white">{vehicle.name}</h3>
+                    <h3 className="text-xl font-bold text-gray-900">{vehicle.name}</h3>
                     {vehicle.vehicleNumber && (
-                        <p className="text-sm font-bold text-cyan-400 tracking-wider mt-1">{vehicle.vehicleNumber}</p>
+                        <p className="text-sm font-bold text-cyan-600 tracking-wider mt-1">{vehicle.vehicleNumber}</p>
                     )}
-                    <span className="text-xs font-medium text-slate-400 uppercase tracking-wider bg-slate-700/50 px-2 py-1 rounded mt-1 inline-block">
+                    <span className="text-xs font-medium text-gray-600 uppercase tracking-wider bg-gray-200 px-2 py-1 rounded mt-1 inline-block">
                         {vehicle.type} • {vehicle.fuelType}
                     </span>
                 </div>
                 <div className="flex gap-2">
-                    <div className="flex bg-slate-700/50 rounded-full p-1 border border-slate-600">
+                    <div className="flex bg-gray-200 rounded-full p-1 border border-gray-300">
                         <button
                             onClick={(e) => onViewHistory(e, 'fuel')}
-                            className="px-3 py-1.5 rounded-full transition-all text-[11px] font-bold uppercase tracking-tight hover:bg-indigo-600 hover:text-white text-slate-300"
+                            className="px-3 py-1.5 rounded-full transition-all text-[11px] font-bold uppercase tracking-tight hover:bg-indigo-600 hover:text-white text-gray-700"
                         >
                             Fuel
                         </button>
                         <button
                             onClick={(e) => onViewHistory(e, 'service')}
-                            className="px-3 py-1.5 rounded-full transition-all text-[11px] font-bold uppercase tracking-tight hover:bg-emerald-600 hover:text-white text-slate-300"
+                            className="px-3 py-1.5 rounded-full transition-all text-[11px] font-bold uppercase tracking-tight hover:bg-emerald-600 hover:text-white text-gray-700"
                         >
                             Service
                         </button>
@@ -67,23 +67,23 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-6">
-                <div className="bg-slate-700/30 p-3 rounded-xl">
-                    <p className="text-slate-400 text-xs">Last Efficiency</p>
-                    <p className="text-2xl font-bold text-cyan-400">{lastMileage} <span className="text-sm text-slate-500">km/l</span></p>
+                <div className="bg-gray-100 p-3 rounded-xl">
+                    <p className="text-gray-600 text-xs">Last Efficiency</p>
+                    <p className="text-2xl font-bold text-cyan-400">{lastMileage} <span className="text-sm text-gray-500">km/l</span></p>
                 </div>
-                <div className="bg-slate-700/30 p-3 rounded-xl">
-                    <p className="text-slate-400 text-xs">Avg Efficiency</p>
-                    <p className="text-2xl font-bold text-emerald-400">{avgMileage} <span className="text-sm text-slate-500">km/l</span></p>
+                <div className="bg-gray-100 p-3 rounded-xl">
+                    <p className="text-gray-600 text-xs">Avg Efficiency</p>
+                    <p className="text-2xl font-bold text-emerald-400">{avgMileage} <span className="text-sm text-gray-500">km/l</span></p>
                 </div>
 
                 {recentMileages.length > 0 && (
-                    <div className="col-span-2 bg-slate-700/20 p-3 rounded-xl">
-                        <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-2">Recent Mileages</p>
+                    <div className="col-span-2 bg-gray-50 p-3 rounded-xl">
+                        <p className="text-gray-500 text-[10px] uppercase font-bold tracking-wider mb-2">Recent Mileages</p>
                         <div className="flex gap-2">
                             {recentMileages.map((m, idx) => (
-                                <div key={idx} className="flex-1 bg-slate-800/50 p-2 rounded-lg border border-slate-700 text-center">
+                                <div key={idx} className="flex-1 bg-white p-2 rounded-lg border border-gray-300 text-center">
                                     <p className="text-cyan-400 font-bold text-sm">{m.mileage}</p>
-                                    <p className="text-[9px] text-slate-500">{formatDate(m.date)}</p>
+                                    <p className="text-[9px] text-gray-500">{formatDate(m.date)}</p>
                                 </div>
                             ))}
                         </div>
@@ -91,43 +91,43 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
                 )}
 
                 {/* Cost Breakdown */}
-                <div className="col-span-2 bg-slate-700/30 p-3 rounded-xl">
-                    <p className="text-slate-400 text-xs mb-2">Cost Breakdown</p>
+                <div className="col-span-2 bg-gray-100 p-3 rounded-xl">
+                    <p className="text-gray-600 text-xs mb-2">Cost Breakdown</p>
                     <div className="grid grid-cols-3 gap-2">
                         <div className="text-center">
-                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Fuel</p>
+                            <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Fuel</p>
                             <p className="text-sm font-bold text-blue-400">₹{fuelCost}</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Service</p>
+                            <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Service</p>
                             <p className="text-sm font-bold text-emerald-400">₹{serviceCost}</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Total</p>
+                            <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Total</p>
                             <p className="text-sm font-bold text-rose-400">₹{totalSpent}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Last Fill Date */}
-                <div className="col-span-2 bg-slate-700/30 p-3 rounded-xl flex justify-between items-center">
+                <div className="col-span-2 bg-gray-100 p-3 rounded-xl flex justify-between items-center">
                     <div>
-                        <p className="text-slate-400 text-xs">Last Fill</p>
-                        <p className="text-sm text-slate-300">{formatDate(sortedEntries[0]?.date)}</p>
+                        <p className="text-gray-600 text-xs">Last Fill</p>
+                        <p className="text-sm text-gray-700">{formatDate(sortedEntries[0]?.date)}</p>
                     </div>
                 </div>
 
                 {/* Vehicle Number */}
                 {vehicle.vehicleNumber && (
-                    <div className="col-span-2 bg-slate-700/30 p-3 rounded-xl">
-                        <p className="text-slate-400 text-xs mb-1">Vehicle Number</p>
+                    <div className="col-span-2 bg-gray-100 p-3 rounded-xl">
+                        <p className="text-gray-600 text-xs mb-1">Vehicle Number</p>
                         <p className="text-xl font-bold text-cyan-400 tracking-wider">{vehicle.vehicleNumber}</p>
                     </div>
                 )}
 
                 {/* Days Since Last Service */}
-                <div className="col-span-2 bg-slate-700/30 p-3 rounded-xl">
-                    <p className="text-slate-400 text-xs mb-1">Days Since Last Service</p>
+                <div className="col-span-2 bg-gray-100 p-3 rounded-xl">
+                    <p className="text-gray-600 text-xs mb-1">Days Since Last Service</p>
                     {daysSinceService !== null ? (
                         <div className="flex items-baseline gap-2">
                             <p className={`text-2xl font-bold ${daysSinceService <= 90 ? 'text-emerald-400' :
@@ -136,13 +136,13 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
                                 }`}>
                                 {daysSinceService}
                             </p>
-                            <span className="text-sm text-slate-500">days ago</span>
+                            <span className="text-sm text-gray-500">days ago</span>
                             {daysSinceService > 150 && (
                                 <span className="text-rose-400 text-lg animate-pulse" title="Service Overdue!">⚠️</span>
                             )}
                         </div>
                     ) : (
-                        <p className="text-slate-500 text-sm italic">No service records</p>
+                        <p className="text-gray-500 text-sm italic">No service records</p>
                     )}
                 </div>
             </div>
