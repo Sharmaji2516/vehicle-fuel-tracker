@@ -96,6 +96,14 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
                     </div>
                 </div>
 
+                {/* Vehicle Number */}
+                {vehicle.vehicleNumber && (
+                    <div className="col-span-2 bg-slate-700/30 p-3 rounded-xl">
+                        <p className="text-slate-400 text-xs mb-1">Vehicle Number</p>
+                        <p className="text-xl font-bold text-cyan-400 tracking-wider">{vehicle.vehicleNumber}</p>
+                    </div>
+                )}
+
                 {/* Days Since Last Service */}
                 <div className="col-span-2 bg-slate-700/30 p-3 rounded-xl">
                     <p className="text-slate-400 text-xs mb-1">Days Since Last Service</p>
