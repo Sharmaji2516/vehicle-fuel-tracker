@@ -87,18 +87,8 @@ const Layout = ({ children }) => {
                     </AnimatePresence>
                 </main>
 
-                <footer className="mt-auto border-t border-slate-200 dark:border-white/5 py-8 text-center text-sm text-slate-500 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                    <p className="relative z-10 flex flex-col md:flex-row justify-center items-center gap-2">
-                        <span>© {new Date().getFullYear()} FuelTracker.</span>
-                        <span className="hidden md:inline text-slate-300 dark:text-slate-700">•</span>
-                        <span className="flex items-center gap-1">
-                            Developed & Maintained by
-                            <span className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-cyan-500 dark:from-indigo-400 dark:to-cyan-400 hover:scale-105 transition-transform cursor-default">
-                                Lav & Kush Sharma
-                            </span>
-                        </span>
-                    </p>
+                <footer className="mt-auto border-t border-slate-200 dark:border-white/5 py-8 text-center text-sm text-slate-500">
+                    <p>© {new Date().getFullYear()} FuelTracker. Crafted by <span className="text-indigo-600 dark:text-indigo-400 font-bold">Lav Sharma</span></p>
                 </footer>
             </div>
         </div>
