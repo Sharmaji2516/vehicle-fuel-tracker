@@ -7,6 +7,8 @@ import AddVehicleForm from './AddVehicleForm';
 import HistoryTable from './HistoryTable';
 import ServiceHistoryTable from './ServiceHistoryTable';
 import AddServiceForm from './AddServiceForm';
+import { Plus, Car, Cloud, CloudOff, RefreshCw, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Dashboard = () => {
     const { user } = useAuth();
@@ -53,25 +55,41 @@ const Dashboard = () => {
         setIsAddServiceModalOpen(true);
     };
 
+    const getSyncIcon = () => {
+        switch (syncStatus) {
+            case 'synced': return <Cloud className="w-4 h-4 text-emerald-400" />;
+            case 'syncing': return <RefreshCw className="w-4 h-4 text-indigo-400 animate-spin" />;
+            case 'offline': return <CloudOff className="w-4 h-4 text-slate-400" />;
+            case 'migrating': return <RefreshCw className="w-4 h-4 text-amber-400 animate-spin" />;
+            default: return <AlertCircle className="w-4 h-4 text-red-400" />;
+        }
+    };
+
     return (
-        <div className="space-y-8">
-            <section>
-                <div className="flex justify-between items-center mb-6">
-                    <div className="flex items-center gap-4">
-                        <h2 className="text-2xl font-bold text-white border-l-4 border-indigo-500 pl-4">My Vehicles</h2>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                            <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700">
-                                <div className={`w-2 h-2 rounded-full ${syncStatus === 'synced' ? 'bg-emerald-500 animate-pulse' : syncStatus === 'offline' ? 'bg-slate-500' : 'bg-amber-500'}`}></div>
-                                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold px-1">
-                                    {syncStatus === 'synced' ? 'Cloud Synced' : syncStatus === 'migrating' ? 'Migrating...' : syncStatus === 'syncing' ? 'Syncing...' : 'Offline'}
+        <div className="space-y-12">
+            {/* Header Section */}
+            <section className="relative">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+                    <div>
+                        <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+                            <Car className="w-8 h-8 text-indigo-400" />
+                            My Garage
+                        </h2>
+                        <div className="flex items-center gap-3 mt-2">
+                            <div className="glass px-3 py-1 rounded-full flex items-center gap-2 text-xs font-medium text-slate-300">
+                                {getSyncIcon()}
+                                <span className="uppercase tracking-wider">
+                                    {syncStatus === 'synced' ? 'Cloud Synced' : syncStatus}
                                 </span>
                             </div>
-                            <span className="text-[10px] text-indigo-400 font-mono bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">v1.5 - Absolute Sync</span>
                         </div>
                     </div>
-                    <div className="flex gap-2">
+
+                    <div className="flex gap-3">
                         {vehicles.length === 0 && (
-                            <button
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                                 onClick={() => {
                                     const defaults = [
                                         { name: 'Activa 5G', type: 'Bike', fuelType: 'Petrol' },
@@ -80,97 +98,133 @@ const Dashboard = () => {
                                     ];
                                     defaults.forEach(v => addVehicle(v));
                                 }}
-                                className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition-transform transform hover:-translate-y-0.5 text-xs md:text-base w-full md:w-auto"
+                                className="bg-emerald-600/80 hover:bg-emerald-500 backdrop-blur-md text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-emerald-900/20 flex items-center gap-2"
                             >
-                                🚀 Setup Garage
-                            </button>
+                                🚀 Setup Demo
+                            </motion.button>
                         )}
-                        <button
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={() => setIsAddVehicleModalOpen(true)}
-                            className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition-transform transform hover:-translate-y-0.5 flex items-center gap-2"
+                            className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-900/20 flex items-center gap-2"
                         >
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
+                            <Plus className="w-5 h-5" />
                             Add Vehicle
-                        </button>
+                        </motion.button>
                     </div>
                 </div>
 
                 {vehicles.length === 0 ? (
-                    <div className="text-center p-12 bg-slate-800/50 rounded-2xl border border-dashed border-slate-700">
-                        <p className="text-slate-400 text-lg mb-4">{syncStatus === 'migrating' ? 'Migrating your data...' : 'No vehicles found in the cloud.'}</p>
-                        <p className="text-slate-500 text-sm">Click "Add Vehicle" or "Setup Garage" to get started!</p>
-                    </div>
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-center py-24 glass rounded-3xl border-dashed border-2 border-slate-700"
+                    >
+                        <Car className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                        <p className="text-slate-400 text-xl font-medium mb-2">Your garage is empty</p>
+                        <p className="text-slate-500">Add a vehicle to start tracking fuel and maintainence.</p>
+                    </motion.div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {vehicles.map(vehicle => (
-                            <div key={vehicle.id} onClick={() => handleViewHistory(vehicle.id)} className="cursor-pointer">
-                                <VehicleCard
-                                    vehicle={vehicle}
-                                    entries={getVehicleEntries(vehicle.id)}
-                                    serviceEntries={useFuel().getVehicleServiceEntries(vehicle.id)}
-                                    onAddEntry={(e, id) => {
-                                        e.stopPropagation();
-                                        handleAddEntry(vehicle.id);
-                                    }}
-                                    onViewHistory={(e, type) => {
-                                        e.stopPropagation();
-                                        handleViewHistory(vehicle.id, type);
-                                    }}
-                                    onAddService={(e) => {
-                                        e.stopPropagation();
-                                        handleAddService(vehicle.id);
-                                    }}
-                                />
-                            </div>
-                        ))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <AnimatePresence>
+                            {vehicles.map((vehicle, index) => (
+                                <motion.div
+                                    key={vehicle.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    layout
+                                >
+                                    <VehicleCard
+                                        vehicle={vehicle}
+                                        entries={getVehicleEntries(vehicle.id)}
+                                        serviceEntries={useFuel().getVehicleServiceEntries(vehicle.id)}
+                                        onAddEntry={(e, id) => {
+                                            e.stopPropagation();
+                                            handleAddEntry(vehicle.id);
+                                        }}
+                                        onViewHistory={(e, type) => {
+                                            e.stopPropagation();
+                                            handleViewHistory(vehicle.id, type);
+                                        }}
+                                        onAddService={(e) => {
+                                            e.stopPropagation();
+                                            handleAddService(vehicle.id);
+                                        }}
+                                        isSelected={viewHistoryId === vehicle.id}
+                                    />
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
                     </div>
                 )}
             </section>
 
-            {viewHistoryId && (
-                <section className="animate-fade-in-up">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                        <div className="flex items-center gap-4">
-                            <h2 className={`text-2xl font-bold text-white border-l-4 ${historyType === 'fuel' ? 'border-cyan-500' : 'border-emerald-500'} pl-4`}>
-                                {historyType === 'fuel' ? 'Fuel History' : 'Service History'}: {vehicles.find(v => v.id === viewHistoryId)?.name}
-                            </h2>
-                        </div>
-                        <div className="flex bg-slate-800 p-1 rounded-xl border border-slate-700 w-full md:w-auto">
-                            <button
-                                onClick={() => setHistoryType('fuel')}
-                                className={`flex-1 md:px-4 py-2 rounded-lg text-sm font-bold transition-all ${historyType === 'fuel' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                            >
-                                Fuel
-                            </button>
-                            <button
-                                onClick={() => setHistoryType('service')}
-                                className={`flex-1 md:px-4 py-2 rounded-lg text-sm font-bold transition-all ${historyType === 'service' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                            >
-                                Service
-                            </button>
-                            <button onClick={() => setViewHistoryId(null)} className="ml-2 p-2 text-slate-400 hover:text-white md:hidden font-bold">✕</button>
-                        </div>
-                        <button onClick={() => setViewHistoryId(null)} className="hidden md:block text-slate-400 hover:text-white font-bold transition-colors">
-                            Close History
-                        </button>
-                    </div>
+            {/* History Section */}
+            <AnimatePresence>
+                {viewHistoryId && (
+                    <motion.section
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="glass rounded-3xl p-6 md:p-8">
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 border-b border-white/5 pb-6">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-white mb-2">
+                                        {vehicles.find(v => v.id === viewHistoryId)?.name} History
+                                    </h3>
+                                    <p className="text-slate-400 text-sm">
+                                        Viewing {historyType} records
+                                    </p>
+                                </div>
+                                <div className="flex bg-slate-900/50 p-1 rounded-xl">
+                                    <button
+                                        onClick={() => setHistoryType('fuel')}
+                                        className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${historyType === 'fuel'
+                                                ? 'bg-indigo-600 text-white shadow-lg'
+                                                : 'text-slate-400 hover:text-white'
+                                            }`}
+                                    >
+                                        Fuel
+                                    </button>
+                                    <button
+                                        onClick={() => setHistoryType('service')}
+                                        className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${historyType === 'service'
+                                                ? 'bg-emerald-600 text-white shadow-lg'
+                                                : 'text-slate-400 hover:text-white'
+                                            }`}
+                                    >
+                                        Service
+                                    </button>
+                                    <button
+                                        onClick={() => setViewHistoryId(null)}
+                                        className="ml-2 px-4 py-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
 
-                    {historyType === 'fuel' ? (
-                        <HistoryTable
-                            vehicleId={viewHistoryId}
-                            onEdit={(entry) => handleEditEntry(entry, viewHistoryId)}
-                        />
-                    ) : (
-                        <ServiceHistoryTable
-                            vehicleId={viewHistoryId}
-                            onEdit={(entry) => handleEditService(entry, viewHistoryId)}
-                        />
-                    )}
-                </section>
-            )}
+                            {historyType === 'fuel' ? (
+                                <HistoryTable
+                                    vehicleId={viewHistoryId}
+                                    onEdit={(entry) => handleEditEntry(entry, viewHistoryId)}
+                                />
+                            ) : (
+                                <ServiceHistoryTable
+                                    vehicleId={viewHistoryId}
+                                    onEdit={(entry) => handleEditService(entry, viewHistoryId)}
+                                />
+                            )}
+                        </div>
+                    </motion.section>
+                )}
+            </AnimatePresence>
 
+            {/* Modals */}
             {isAddModalOpen && (
                 <AddEntryForm
                     vehicleId={selectedVehicleId}
@@ -192,7 +246,6 @@ const Dashboard = () => {
                     onClose={() => setIsAddServiceModalOpen(false)}
                 />
             )}
-
         </div>
     );
 };

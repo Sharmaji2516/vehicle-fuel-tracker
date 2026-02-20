@@ -1,7 +1,9 @@
 import React from 'react';
 import { calculateMileage, calculateAverageMileage, calculateTotalSpent, calculateAllMileages, formatDate, calculateDaysSinceLastService, calculateFuelCost, calculateServiceCost } from '../utils/calculations';
+import { motion } from 'framer-motion';
+import { Droplet, Wrench, IndianRupee, Calendar, TrendingUp } from 'lucide-react';
 
-const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onViewHistory, onAddService }) => {
+const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onViewHistory, onAddService, isSelected }) => {
     const sortedEntries = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
     const lastMileage = calculateMileage(sortedEntries);
     const avgMileage = calculateAverageMileage(sortedEntries);
@@ -11,139 +13,79 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
     const recentMileages = calculateAllMileages(entries).slice(0, 3);
     const daysSinceService = calculateDaysSinceLastService(serviceEntries);
 
-    // Debug: Log vehicle data to see if vehicleNumber exists
-    console.log('Vehicle data:', vehicle.name, 'vehicleNumber:', vehicle.vehicleNumber);
-
     return (
-        <div className="bg-gray-50 backdrop-blur-md border border-gray-200 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+        <div
+            className={`glass-card p-6 rounded-3xl relative overflow-hidden group cursor-pointer border border-white/5 transition-all duration-300 ${isSelected ? 'ring-2 ring-indigo-500' : ''}`}
+            onClick={(e) => onViewHistory(e, 'fuel')}
+        >
+            {/* Decoration */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-white/0 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
 
-            <div className="flex justify-between items-start mb-4">
+            {/* Header */}
+            <div className="relative z-10 flex justify-between items-start mb-6">
                 <div>
-                    <h3 className="text-xl font-bold text-gray-900">{vehicle.name}</h3>
+                    <h3 className="text-xl font-bold text-white mb-1 group-hover:text-indigo-300 transition-colors">{vehicle.name}</h3>
                     {vehicle.vehicleNumber && (
-                        <p className="text-sm font-bold text-cyan-600 tracking-wider mt-1">{vehicle.vehicleNumber}</p>
+                        <p className="text-xs font-mono text-slate-400 bg-slate-900/50 px-2 py-1 rounded-md inline-block border border-slate-700">
+                            {vehicle.vehicleNumber}
+                        </p>
                     )}
-                    <span className="text-xs font-medium text-gray-600 uppercase tracking-wider bg-gray-200 px-2 py-1 rounded mt-1 inline-block">
-                        {vehicle.type} • {vehicle.fuelType}
-                    </span>
                 </div>
-                <div className="flex gap-2">
-                    <div className="flex bg-gray-200 rounded-full p-1 border border-gray-300">
-                        <button
-                            onClick={(e) => onViewHistory(e, 'fuel')}
-                            className="px-3 py-1.5 rounded-full transition-all text-[11px] font-bold uppercase tracking-tight hover:bg-indigo-600 hover:text-white text-gray-700"
-                        >
-                            Fuel
-                        </button>
-                        <button
-                            onClick={(e) => onViewHistory(e, 'service')}
-                            className="px-3 py-1.5 rounded-full transition-all text-[11px] font-bold uppercase tracking-tight hover:bg-emerald-600 hover:text-white text-gray-700"
-                        >
-                            Service
-                        </button>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <button
-                            onClick={(e) => onAddEntry(e, vehicle.id)}
-                            className="bg-indigo-600 hover:bg-indigo-500 text-white p-1.5 rounded-lg transition-colors shadow-lg shadow-indigo-500/30"
-                            title="Add Fuel"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                            </svg>
-                        </button>
-                        <button
-                            onClick={(e) => onAddService(e)}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white p-1.5 rounded-lg transition-colors shadow-lg shadow-emerald-500/30"
-                            title="Add Service"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
-                            </svg>
-                        </button>
-                    </div>
+                <div className="text-right">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-900/50 px-2 py-1 rounded-full border border-slate-700">
+                        {vehicle.type}
+                    </span>
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-6">
-                <div className="bg-gray-100 p-3 rounded-xl">
-                    <p className="text-gray-600 text-xs">Last Efficiency</p>
-                    <p className="text-2xl font-bold text-cyan-400">{lastMileage} <span className="text-sm text-gray-500">km/l</span></p>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 gap-3 mb-6 relative z-10">
+                <div className="bg-gradient-to-br from-indigo-900/40 to-indigo-900/10 p-4 rounded-2xl border border-indigo-500/10">
+                    <p className="text-indigo-300 text-xs font-medium mb-1 flex items-center gap-1">
+                        <TrendingUp className="w-3 h-3" /> Last Eff.
+                    </p>
+                    <p className="text-2xl font-bold text-white">{lastMileage} <span className="text-xs text-indigo-300/60 font-medium">km/l</span></p>
                 </div>
-                <div className="bg-gray-100 p-3 rounded-xl">
-                    <p className="text-gray-600 text-xs">Avg Efficiency</p>
-                    <p className="text-2xl font-bold text-emerald-400">{avgMileage} <span className="text-sm text-gray-500">km/l</span></p>
+                <div className="bg-slate-800/40 p-4 rounded-2xl border border-white/5">
+                    <p className="text-slate-400 text-xs font-medium mb-1">Avg Eff.</p>
+                    <p className="text-2xl font-bold text-slate-200">{avgMileage} <span className="text-xs text-slate-500 font-medium">km/l</span></p>
                 </div>
+            </div>
 
-                {recentMileages.length > 0 && (
-                    <div className="col-span-2 bg-gray-50 p-3 rounded-xl">
-                        <p className="text-gray-500 text-[10px] uppercase font-bold tracking-wider mb-2">Recent Mileages</p>
-                        <div className="flex gap-2">
-                            {recentMileages.map((m, idx) => (
-                                <div key={idx} className="flex-1 bg-white p-2 rounded-lg border border-gray-300 text-center">
-                                    <p className="text-cyan-400 font-bold text-sm">{m.mileage}</p>
-                                    <p className="text-[9px] text-gray-500">{formatDate(m.date)}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
+            {/* Actions */}
+            <div className="flex gap-2 relative z-10">
+                <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={(e) => onAddEntry(e, vehicle.id)}
+                    className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-indigo-900/20 flex items-center justify-center gap-2 transition-colors"
+                >
+                    <Droplet className="w-4 h-4" /> Fuel
+                </motion.button>
+                <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={(e) => onAddService(e)}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 transition-colors"
+                >
+                    <Wrench className="w-4 h-4" /> Service
+                </motion.button>
+            </div>
 
-                {/* Cost Breakdown */}
-                <div className="col-span-2 bg-gray-100 p-3 rounded-xl">
-                    <p className="text-gray-600 text-xs mb-2">Cost Breakdown</p>
-                    <div className="grid grid-cols-3 gap-2">
-                        <div className="text-center">
-                            <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Fuel</p>
-                            <p className="text-sm font-bold text-blue-400">₹{fuelCost}</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Service</p>
-                            <p className="text-sm font-bold text-emerald-400">₹{serviceCost}</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Total</p>
-                            <p className="text-sm font-bold text-rose-400">₹{totalSpent}</p>
-                        </div>
-                    </div>
+            {/* Mini Stats Footer */}
+            <div className="mt-6 pt-4 border-t border-white/5 grid grid-cols-3 gap-2 text-center relative z-10">
+                <div>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">Total Spent</p>
+                    <p className="text-xs font-bold text-slate-300 mt-1">₹{totalSpent}</p>
                 </div>
-
-                {/* Last Fill Date */}
-                <div className="col-span-2 bg-gray-100 p-3 rounded-xl flex justify-between items-center">
-                    <div>
-                        <p className="text-gray-600 text-xs">Last Fill</p>
-                        <p className="text-sm text-gray-700">{formatDate(sortedEntries[0]?.date)}</p>
-                    </div>
+                <div>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">Days Ago</p>
+                    <p className={`text-xs font-bold mt-1 ${daysSinceService > 150 ? 'text-red-400 animate-pulse' : 'text-slate-300'
+                        }`}>
+                        {daysSinceService ?? '-'}
+                    </p>
                 </div>
-
-                {/* Vehicle Number */}
-                {vehicle.vehicleNumber && (
-                    <div className="col-span-2 bg-gray-100 p-3 rounded-xl">
-                        <p className="text-gray-600 text-xs mb-1">Vehicle Number</p>
-                        <p className="text-xl font-bold text-cyan-400 tracking-wider">{vehicle.vehicleNumber}</p>
-                    </div>
-                )}
-
-                {/* Days Since Last Service */}
-                <div className="col-span-2 bg-gray-100 p-3 rounded-xl">
-                    <p className="text-gray-600 text-xs mb-1">Days Since Last Service</p>
-                    {daysSinceService !== null ? (
-                        <div className="flex items-baseline gap-2">
-                            <p className={`text-2xl font-bold ${daysSinceService <= 90 ? 'text-emerald-400' :
-                                daysSinceService <= 150 ? 'text-yellow-400' :
-                                    'text-rose-400'
-                                }`}>
-                                {daysSinceService}
-                            </p>
-                            <span className="text-sm text-gray-500">days ago</span>
-                            {daysSinceService > 150 && (
-                                <span className="text-rose-400 text-lg animate-pulse" title="Service Overdue!">⚠️</span>
-                            )}
-                        </div>
-                    ) : (
-                        <p className="text-gray-500 text-sm italic">No service records</p>
-                    )}
+                <div>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">Fuel Cost</p>
+                    <p className="text-xs font-bold text-slate-300 mt-1">₹{fuelCost}</p>
                 </div>
             </div>
         </div>

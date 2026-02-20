@@ -1,84 +1,97 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Fuel, LogOut, Sun, Moon, User } from 'lucide-react';
+import { cn } from '../utils/cn';
 
 const Layout = ({ children }) => {
     const { user, logout } = useAuth();
     const { isDark, toggleTheme } = useTheme();
 
     return (
-        <div className={`min-h-screen font-sans selection:bg-indigo-500 selection:text-white ${isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-gray-900'
-            }`}>
-            {/* Background Gradients - Only for dark theme */}
-            {isDark && (
-                <div className="fixed inset-0 z-0 pointer-events-none">
-                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-purple-700/20 blur-[120px]" />
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-700/20 blur-[120px]" />
-                </div>
-            )}
-
-            <div className="relative z-10 px-4 py-8 max-w-7xl mx-auto">
-                <header className="mb-10 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div>
-                        <h1 className="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">
-                            FuelTracker
-                        </h1>
-                        <p className={`mt-2 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Manage your vehicle expenses with ease.</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        {/* Theme Toggle Button */}
-                        <button
-                            onClick={toggleTheme}
-                            className={`p-2 rounded-lg transition-colors ${isDark
-                                    ? 'bg-slate-800 hover:bg-slate-700 border border-slate-700'
-                                    : 'bg-gray-100 hover:bg-gray-200 border border-gray-300'
-                                }`}
-                            title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                        >
-                            {isDark ? (
-                                <svg className="w-5 h-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                                </svg>
-                            ) : (
-                                <svg className="w-5 h-5 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                                </svg>
-                            )}
-                        </button>
-
-                        {/* User Profile */}
-                        <div className="flex items-center gap-2">
-                            {user?.photoURL && (
-                                <img src={user.photoURL} alt="Profile" className={`w-8 h-8 rounded-full border ${isDark ? 'border-slate-600' : 'border-gray-300'}`} />
-                            )}
-                            <span className={`hidden md:inline text-sm ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{user?.displayName}</span>
-                        </div>
-                        <button
-                            onClick={logout}
-                            className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${isDark
-                                    ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
-                                }`}
-                        >
-                            Sign Out
-                        </button>
-                    </div>
-                </header>
-
-                <main>
-                    {children}
-                </main>
-
-                <footer className={`mt-12 text-center text-sm pb-4 ${isDark ? 'text-slate-500' : 'text-gray-500'}`}>
-                    <p>© {new Date().getFullYear()} FuelTracker. All rights reserved.</p>
-                    <p className="mt-1">Developed and Maintained by <span className={`font-medium ${isDark ? 'text-slate-400' : 'text-gray-700'}`}>Lav Sharma</span></p>
-                    {user && (
-                        <p className={`mt-1 text-xs ${isDark ? 'text-slate-600' : 'text-gray-400'}`}>Owner: {user.displayName || user.email}</p>
-                    )}
-                </footer>
+        <div className={cn(
+            "min-h-screen font-sans transition-colors duration-300",
+            isDark ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"
+        )}>
+            {/* Ambient Background Glow */}
+            <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+                <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-indigo-600/10 blur-[150px] animate-pulse-slow" />
+                <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-cyan-500/10 blur-[150px] animate-pulse-slow" />
             </div>
+
+            {/* Navbar */}
+            <nav className="sticky top-0 z-50 border-b border-white/5 bg-slate-950/50 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-950/20">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-16">
+                        {/* Logo */}
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-xl shadow-lg shadow-indigo-500/20">
+                                <Fuel className="w-5 h-5 text-white" />
+                            </div>
+                            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">
+                                FuelTracker
+                            </span>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={toggleTheme}
+                                className="p-2 rounded-full hover:bg-white/5 text-slate-400 hover:text-white transition-all"
+                            >
+                                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                            </button>
+
+                            <div className="h-6 w-px bg-white/10" />
+
+                            <div className="flex items-center gap-3">
+                                <div className="hidden md:flex flex-col items-end">
+                                    <span className="text-sm font-medium text-slate-200">{user?.displayName}</span>
+                                    <span className="text-xs text-slate-500">{user?.email}</span>
+                                </div>
+                                <div className="relative">
+                                    {user?.photoURL ? (
+                                        <img src={user.photoURL} alt="Profile" className="w-9 h-9 rounded-full ring-2 ring-indigo-500/20" />
+                                    ) : (
+                                        <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center ring-2 ring-indigo-500/20">
+                                            <User className="w-5 h-5 text-slate-400" />
+                                        </div>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={logout}
+                                    className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all"
+                                    title="Sign Out"
+                                >
+                                    <LogOut className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            {/* Main Content */}
+            <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        {children}
+                    </motion.div>
+                </AnimatePresence>
+            </main>
+
+            <footer className="mt-auto border-t border-white/5 py-8 text-center text-sm text-slate-500">
+                <p>© {new Date().getFullYear()} FuelTracker. Crafted by <span className="text-indigo-400">Lav Sharma</span></p>
+            </footer>
         </div>
     );
 };
 
 export default Layout;
+
