@@ -98,3 +98,102 @@ export const formatDate = (dateString) => {
     const year = String(date.getFullYear()).slice(-2);
     return `${day}/${month}/${year}`;
 };
+
+export const calculateExpiryStatus = (expiryDate) => {
+    if (!expiryDate) return { status: 'Unknown', color: 'text-slate-500', level: 'none' };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expiry = new Date(expiryDate);
+    expiry.setHours(0, 0, 0, 0);
+
+    const diffTime = expiry - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+        return { status: 'Expired', color: 'text-red-500', days: Math.abs(diffDays), level: 'critical' };
+    } else if (diffDays <= 15) {
+        return { status: 'Expiring Soon', color: 'text-amber-500', days: diffDays, level: 'warning' };
+    } else {
+        return { status: 'Active', color: 'text-emerald-500', days: diffDays, level: 'safe' };
+    }
+};
+
+export const getVehicleAlerts = (vehicle, serviceEntries = []) => {
+    const alerts = [];
+
+    // Check PUC
+    if (vehicle.pucExpiryDate) {
+        const puc = calculateExpiryStatus(vehicle.pucExpiryDate);
+        if (puc.level !== 'safe') {
+            alerts.push({
+                type: 'PUC',
+                vehicleId: vehicle.id,
+                vehicleName: vehicle.name,
+                status: puc.status,
+                days: puc.days,
+                level: puc.level,
+                message: puc.level === 'critical'
+                    ? `PUC expired ${puc.days} days ago!`
+                    : `PUC expires in ${puc.days} days.`
+            });
+        }
+    }
+
+    // Check Insurance
+    if (vehicle.insuranceExpiryDate) {
+        const ins = calculateExpiryStatus(vehicle.insuranceExpiryDate);
+        if (ins.level !== 'safe') {
+            alerts.push({
+                type: 'Insurance',
+                vehicleId: vehicle.id,
+                vehicleName: vehicle.name,
+                status: ins.status,
+                days: ins.days,
+                level: ins.level,
+                message: ins.level === 'critical'
+                    ? `Insurance expired ${ins.days} days ago!`
+                    : `Insurance expires in ${ins.days} days.`
+            });
+        }
+    }
+
+    // Check Service (180 days interval)
+    const daysSinceService = calculateDaysSinceLastService(serviceEntries);
+    if (daysSinceService !== null) {
+        if (daysSinceService >= 180) {
+            alerts.push({
+                type: 'Service',
+                vehicleId: vehicle.id,
+                vehicleName: vehicle.name,
+                status: 'Overdue',
+                days: daysSinceService,
+                level: 'critical',
+                message: `Service is ${daysSinceService - 180} days overdue!`
+            });
+        } else if (daysSinceService >= 165) {
+            alerts.push({
+                type: 'Service',
+                vehicleId: vehicle.id,
+                vehicleName: vehicle.name,
+                status: 'Due Soon',
+                days: 180 - daysSinceService,
+                level: 'warning',
+                message: `Service due in ${180 - daysSinceService} days.`
+            });
+        }
+    }
+
+    return alerts;
+};
+
+export const getExpiryWarning = (type, expiryDate) => {
+    const { status, days, level } = calculateExpiryStatus(expiryDate);
+
+    if (level === 'critical') {
+        return { message: `${type} expired ${days} days ago`, urgent: true };
+    } else if (level === 'warning') {
+        return { message: `${type} expires in ${days} days`, urgent: false };
+    }
+    return null;
+};

@@ -7,6 +7,7 @@ import AddVehicleForm from './AddVehicleForm';
 import HistoryTable from './HistoryTable';
 import ServiceHistoryTable from './ServiceHistoryTable';
 import AddServiceForm from './AddServiceForm';
+import MaintenanceAlerts from './MaintenanceAlerts';
 import { Plus, Car, Cloud, CloudOff, RefreshCw, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -67,6 +68,7 @@ const Dashboard = () => {
 
     return (
         <div className="space-y-12">
+            <MaintenanceAlerts />
             {/* Header Section */}
             <section className="relative">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
@@ -184,8 +186,8 @@ const Dashboard = () => {
                                     <button
                                         onClick={() => setHistoryType('fuel')}
                                         className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${historyType === 'fuel'
-                                                ? 'bg-indigo-600 text-white shadow-lg'
-                                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                            ? 'bg-indigo-600 text-white shadow-lg'
+                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                             }`}
                                     >
                                         Fuel
@@ -193,8 +195,8 @@ const Dashboard = () => {
                                     <button
                                         onClick={() => setHistoryType('service')}
                                         className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${historyType === 'service'
-                                                ? 'bg-emerald-600 text-white shadow-lg'
-                                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                            ? 'bg-emerald-600 text-white shadow-lg'
+                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                             }`}
                                     >
                                         Service

@@ -110,6 +110,11 @@ export const FuelProvider = ({ children }) => {
         if (user && isConfigured) await setDoc(doc(db, "vehicles", id), newVehicle);
     };
 
+    const updateVehicle = async (vehicleId, updates) => {
+        setVehicles(prev => prev.map(v => v.id === vehicleId ? { ...v, ...updates } : v));
+        if (user && isConfigured) await setDoc(doc(db, "vehicles", vehicleId), updates, { merge: true });
+    };
+
     const addEntry = async (entry) => {
         const id = Date.now().toString();
         const newEntry = { ...entry, id, userId: user?.uid || 'guest' };
@@ -162,6 +167,7 @@ export const FuelProvider = ({ children }) => {
         serviceEntries,
         syncStatus,
         addVehicle,
+        updateVehicle,
         addEntry,
         deleteEntry,
         editEntry,

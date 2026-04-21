@@ -13,6 +13,8 @@ const Login = () => {
         displayName: ''
     });
 
+
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
         setError('');
@@ -29,7 +31,6 @@ const Login = () => {
             }
         } catch (err) {
             let userFriendlyMessage = err.message.replace('Firebase:', '').trim();
-            // ... (keep existing error handling logic or simplify)
             if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
                 userFriendlyMessage = "Invalid username or password";
             } else if (err.code === 'auth/invalid-email') {
@@ -43,6 +44,8 @@ const Login = () => {
         }
     };
 
+
+
     return (
         <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-slate-950">
             {/* Animated Background */}
@@ -50,6 +53,9 @@ const Login = () => {
                 <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full bg-indigo-600/20 blur-[150px] animate-pulse-slow" />
                 <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] rounded-full bg-cyan-500/10 blur-[150px] animate-pulse-slow" />
             </div>
+
+            {/* Invisible reCAPTCHA container */}
+            <div id="recaptcha-container"></div>
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -80,105 +86,116 @@ const Login = () => {
                         </motion.p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <AnimatePresence mode="popLayout">
-                            {isSignUp && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                >
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key="email-auth"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                        >
+                                <form onSubmit={handleSubmit} className="space-y-5">
+                                    <AnimatePresence mode="popLayout">
+                                        {isSignUp && (
+                                            <motion.div
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: 'auto' }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                            >
+                                                <div className="relative group">
+                                                    <User className="absolute left-4 top-3.5 w-5 h-5 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                                                    <input
+                                                        type="text"
+                                                        name="displayName"
+                                                        required
+                                                        value={formData.displayName}
+                                                        onChange={handleChange}
+                                                        placeholder="Full Name"
+                                                        className="w-full bg-slate-900/50 border border-slate-700 rounded-xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-medium"
+                                                    />
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+
                                     <div className="relative group">
-                                        <User className="absolute left-4 top-3.5 w-5 h-5 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                                        <Mail className="absolute left-4 top-3.5 w-5 h-5 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
                                         <input
-                                            type="text"
-                                            name="displayName"
+                                            type="email"
+                                            name="email"
                                             required
-                                            value={formData.displayName}
+                                            value={formData.email}
                                             onChange={handleChange}
-                                            placeholder="Full Name"
+                                            placeholder="Email Address"
                                             className="w-full bg-slate-900/50 border border-slate-700 rounded-xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-medium"
                                         />
                                     </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
 
-                        <div className="relative group">
-                            <Mail className="absolute left-4 top-3.5 w-5 h-5 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
-                            <input
-                                type="email"
-                                name="email"
-                                required
-                                value={formData.email}
-                                onChange={handleChange}
-                                placeholder="Email Address"
-                                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-medium"
-                            />
-                        </div>
+                                    <div className="relative group">
+                                        <Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                                        <input
+                                            type="password"
+                                            name="password"
+                                            required
+                                            value={formData.password}
+                                            onChange={handleChange}
+                                            placeholder="Password"
+                                            className="w-full bg-slate-900/50 border border-slate-700 rounded-xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-medium"
+                                        />
+                                    </div>
 
-                        <div className="relative group">
-                            <Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
-                            <input
-                                type="password"
-                                name="password"
-                                required
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="Password"
-                                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-medium"
-                            />
-                        </div>
+                                    {error && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3 rounded-lg flex items-center gap-2"
+                                        >
+                                            <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                                            {error}
+                                        </motion.div>
+                                    )}
 
-                        {error && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3 rounded-lg flex items-center gap-2"
-                            >
-                                <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                                {error}
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        type="submit"
+                                        className="w-full bg-gradient-to-r from-indigo-600 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 group"
+                                    >
+                                        {isSignUp ? 'Create Account' : 'Sign In'}
+                                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    </motion.button>
+                                </form>
+
+                                <div className="my-8 flex items-center gap-4">
+                                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+                                    <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">Or continue with</span>
+                                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+                                </div>
+
+                                <div className="space-y-3">
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={login}
+                                        className="w-full flex items-center justify-center gap-3 bg-white text-slate-900 font-bold py-3.5 px-4 rounded-xl hover:bg-slate-50 transition-all shadow-lg"
+                                    >
+                                        <Chrome className="w-5 h-5 text-slate-900" />
+                                        Sign in with Google
+                                    </motion.button>
+
+
+
+                                    <div className="text-center mt-4">
+                                        <button
+                                            onClick={() => setIsSignUp(!isSignUp)}
+                                            className="text-slate-400 hover:text-white text-sm font-medium transition-colors"
+                                        >
+                                            {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+                                            <span className="text-indigo-400 hover:underline">{isSignUp ? 'Sign In' : 'Sign Up'}</span>
+                                        </button>
+                                    </div>
+                                </div>
                             </motion.div>
-                        )}
-
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            type="submit"
-                            className="w-full bg-gradient-to-r from-indigo-600 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 group"
-                        >
-                            {isSignUp ? 'Create Account' : 'Sign In'}
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </motion.button>
-                    </form>
-
-                    <div className="my-8 flex items-center gap-4">
-                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
-                        <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">Or continue with</span>
-                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
-                    </div>
-
-                    <div className="space-y-4">
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={login}
-                            className="w-full flex items-center justify-center gap-3 bg-white text-slate-900 font-bold py-3.5 px-4 rounded-xl hover:bg-slate-50 transition-all shadow-lg"
-                        >
-                            <Chrome className="w-5 h-5 text-slate-900" />
-                            Sign in with Google
-                        </motion.button>
-
-                        <div className="text-center">
-                            <button
-                                onClick={() => setIsSignUp(!isSignUp)}
-                                className="text-slate-400 hover:text-white text-sm font-medium transition-colors"
-                            >
-                                {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
-                                <span className="text-indigo-400 hover:underline">{isSignUp ? 'Sign In' : 'Sign Up'}</span>
-                            </button>
-                        </div>
-                    </div>
+                    </AnimatePresence>
                 </div>
 
                 <motion.p

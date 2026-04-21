@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { auth, googleProvider } from '../firebase';
 import {
     signInWithPopup,
@@ -16,6 +16,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+
 
     useEffect(() => {
         if (!auth) {
@@ -68,6 +69,8 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+
+
     const logout = async () => {
         if (!auth) return;
         try {
@@ -82,6 +85,7 @@ export const AuthProvider = ({ children }) => {
         login,
         signup,
         loginWithEmail,
+
         logout,
         loading
     };

@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useFuel } from '../context/FuelContext';
-import { db } from '../firebase';
-import { doc, updateDoc } from 'firebase/firestore';
 
 const UpdateVehicleNumbers = ({ onClose }) => {
-    const { vehicles } = useFuel();
+    const { vehicles, updateVehicle } = useFuel();
     const [status, setStatus] = useState('');
     const [updating, setUpdating] = useState(false);
 
@@ -25,7 +23,7 @@ const UpdateVehicleNumbers = ({ onClose }) => {
             for (const vehicle of vehicles) {
                 for (const [name, number] of Object.entries(vehicleNumbers)) {
                     if (vehicle.name.toLowerCase().includes(name.toLowerCase())) {
-                        await updateDoc(doc(db, 'vehicles', vehicle.id), {
+                        await updateVehicle(vehicle.id, {
                             vehicleNumber: number
                         });
                         updated++;
