@@ -22,67 +22,83 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
     const insuranceStatus = calculateExpiryStatus(vehicle.insuranceExpiryDate);
 
     return (
-        <div
-            className={`glass-card p-6 rounded-3xl relative overflow-hidden group cursor-pointer border border-slate-200 dark:border-white/5 transition-all duration-300 ${isSelected ? 'ring-2 ring-indigo-500' : ''}`}
+        <motion.div
+            layout
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            whileHover={{ y: -5 }}
+            className={`glass-card p-6 rounded-[2rem] relative overflow-hidden group cursor-pointer border border-white/20 dark:border-white/10 transition-all duration-500 ${isSelected ? 'ring-2 ring-indigo-500 shadow-2xl shadow-indigo-500/20' : ''}`}
             onClick={(e) => onViewHistory(e, 'fuel')}
         >
-            {/* Decoration */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/5 to-transparent dark:from-white/5 dark:to-white/0 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
+            {/* Ambient Background Accents */}
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-indigo-500/20 transition-colors" />
+            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-cyan-500/20 transition-colors" />
 
             {/* Warning Banners */}
-            <div className="relative z-20 space-y-1 mb-3">
+            <div className="relative z-20 flex flex-wrap gap-2 mb-4">
                 {pucWarning && (
-                    <div className={`text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1.5 ${pucWarning.urgent ? 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400' : 'bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'}`}>
+                    <motion.div 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className={`text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1.5 backdrop-blur-md shadow-sm border ${pucWarning.urgent ? 'bg-red-500/10 text-red-600 border-red-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'}`}>
                         <AlertTriangle className="w-3 h-3" />
                         {pucWarning.message.toUpperCase()}
-                    </div>
+                    </motion.div>
                 )}
                 {insuranceWarning && (
-                    <div className={`text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1.5 ${insuranceWarning.urgent ? 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400' : 'bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'}`}>
+                    <motion.div 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className={`text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1.5 backdrop-blur-md shadow-sm border ${insuranceWarning.urgent ? 'bg-red-500/10 text-red-600 border-red-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'}`}>
                         <AlertTriangle className="w-3 h-3" />
                         {insuranceWarning.message.toUpperCase()}
-                    </div>
+                    </motion.div>
                 )}
             </div>
 
             {/* Header */}
             <div className="relative z-10 flex justify-between items-start mb-6">
                 <div>
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">{vehicle.name}</h3>
-                    {vehicle.vehicleNumber && (
-                        <p className="text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/50 px-2 py-1 rounded-md inline-block border border-slate-200 dark:border-slate-700">
-                            {vehicle.vehicleNumber}
-                        </p>
-                    )}
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        {vehicle.name}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1.5">
+                        <span className="text-[10px] font-mono font-bold tracking-wider text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
+                            {vehicle.vehicleNumber || 'NO NUMBER'}
+                        </span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-500/80 dark:text-indigo-400/80">
+                            • {vehicle.type}
+                        </span>
+                    </div>
                 </div>
-                <div className="flex flex-col items-end gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 dark:bg-slate-900/50 px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
-                        {vehicle.type}
-                    </span>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setIsEditModalOpen(true);
-                        }}
-                        className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-900/50 text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 border border-slate-200 dark:border-slate-700 transition-all"
-                        title="Edit Details"
-                    >
-                        <Edit3 className="w-3.5 h-3.5" />
-                    </button>
-                </div>
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsEditModalOpen(true);
+                    }}
+                    className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-slate-400 hover:text-indigo-500 hover:bg-white dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-all shadow-sm"
+                >
+                    <Edit3 className="w-4 h-4" />
+                </button>
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-3 mb-6 relative z-10">
-                <div className="bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-900/40 dark:to-indigo-900/10 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-500/10 text-center md:text-left">
-                    <p className="text-indigo-600 dark:text-indigo-300 text-xs font-medium mb-1 flex items-center justify-center md:justify-start gap-1">
+            <div className="grid grid-cols-2 gap-4 mb-6 relative z-10">
+                <div className="bg-gradient-to-br from-indigo-500/5 to-purple-500/5 dark:from-indigo-500/10 dark:to-purple-500/10 p-4 rounded-[1.5rem] border border-indigo-500/10 dark:border-indigo-500/20 group/stat">
+                    <p className="text-indigo-600 dark:text-indigo-300 text-[10px] font-black uppercase tracking-widest mb-1 flex items-center gap-1.5">
                         <TrendingUp className="w-3 h-3" /> Last Eff.
                     </p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{lastMileage} <span className="text-xs text-indigo-500/60 dark:text-indigo-300/60 font-medium">km/l</span></p>
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{lastMileage}</span>
+                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500">km/l</span>
+                    </div>
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-white/5 text-center md:text-left">
-                    <p className="text-slate-500 dark:text-slate-400 text-xs font-medium mb-1">Avg Eff.</p>
-                    <p className="text-2xl font-bold text-slate-700 dark:text-slate-200">{avgMileage} <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">km/l</span></p>
+                <div className="bg-slate-50/50 dark:bg-slate-800/30 p-4 rounded-[1.5rem] border border-slate-200/50 dark:border-white/5">
+                    <p className="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Avg Eff.</p>
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-black text-slate-700 dark:text-slate-200 tracking-tighter">{avgMileage}</span>
+                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500">km/l</span>
+                    </div>
                 </div>
             </div>
 
@@ -92,11 +108,13 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
                     e.stopPropagation();
                     setIsDetailsExpanded(!isDetailsExpanded);
                 }}
-                className="w-full mb-4 py-2 px-4 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900/50 transition-all"
+                className="w-full mb-4 py-3 px-4 rounded-2xl bg-white/50 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:border-indigo-500/30 transition-all shadow-sm group/btn"
             >
                 <div className="flex items-center gap-2">
-                    <Info className="w-3.5 h-3.5" />
-                    PUC & INSURANCE DETAILS
+                    <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 group-hover/btn:scale-110 transition-transform">
+                        <Info className="w-3.5 h-3.5" />
+                    </div>
+                    PUC & INSURANCE
                 </div>
                 {isDetailsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
@@ -112,23 +130,23 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
                     >
                         {/* PUC Details */}
                         {vehicle.pucNumber && (
-                            <div className="p-3 rounded-2xl bg-indigo-50/50 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/10">
-                                <div className="flex justify-between items-center mb-2">
-                                    <div className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold uppercase tracking-wider">
-                                        <FileText className="w-3 h-3" /> PUC Info
+                            <div className="p-4 rounded-2xl bg-white/40 dark:bg-indigo-500/5 border border-slate-200/50 dark:border-indigo-500/10 shadow-sm">
+                                <div className="flex justify-between items-center mb-3">
+                                    <div className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-widest">
+                                        <FileText className="w-4 h-4" /> PUC
                                     </div>
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${pucStatus.color.replace('text-', 'bg-').replace('-500', '-500/10')} ${pucStatus.color.replace('text-', 'border-').replace('-500', '-500/20')} ${pucStatus.color}`}>
+                                    <span className={`text-[10px] font-black px-3 py-1 rounded-full border shadow-sm ${pucStatus.color.replace('text-', 'bg-').replace('-500', '-500/10')} ${pucStatus.color.replace('text-', 'border-').replace('-500', '-500/20')} ${pucStatus.color}`}>
                                         {pucStatus.status.toUpperCase()}
                                     </span>
                                 </div>
-                                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <p className="text-[9px] text-slate-400 uppercase">Cert #</p>
-                                        <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 truncate">{vehicle.pucNumber}</p>
+                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Cert #</p>
+                                        <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{vehicle.pucNumber}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[9px] text-slate-400 uppercase">Expires</p>
-                                        <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">{formatDate(vehicle.pucExpiryDate)}</p>
+                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Expires</p>
+                                        <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{formatDate(vehicle.pucExpiryDate)}</p>
                                     </div>
                                 </div>
                             </div>
@@ -136,83 +154,68 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
 
                         {/* Insurance Details */}
                         {vehicle.insurancePolicyNumber && (
-                            <div className="p-3 rounded-2xl bg-emerald-50/50 dark:bg-emerald-500/5 border border-emerald-100 dark:border-emerald-500/10">
-                                <div className="flex justify-between items-center mb-2">
-                                    <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
-                                        <Shield className="w-3 h-3" /> Insurance Info
+                            <div className="p-4 rounded-2xl bg-white/40 dark:bg-emerald-500/5 border border-slate-200/50 dark:border-emerald-500/10 shadow-sm">
+                                <div className="flex justify-between items-center mb-3">
+                                    <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                                        <Shield className="w-3.5 h-3.5" /> Insurance
                                     </div>
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${insuranceStatus.color.replace('text-', 'bg-').replace('-500', '-500/10')} ${insuranceStatus.color.replace('text-', 'border-').replace('-500', '-500/20')} ${insuranceStatus.color}`}>
+                                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border shadow-sm ${insuranceStatus.color.replace('text-', 'bg-').replace('-500', '-500/10')} ${insuranceStatus.color.replace('text-', 'border-').replace('-500', '-500/20')} ${insuranceStatus.color}`}>
                                         {insuranceStatus.status.toUpperCase()}
                                     </span>
                                 </div>
-                                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                                    <div className="col-span-2 mb-1">
-                                        <p className="text-[9px] text-slate-400 uppercase">Company</p>
-                                        <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 truncate">{vehicle.insuranceCompany || 'N/A'}</p>
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                                    <div className="col-span-2">
+                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Provider</p>
+                                        <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{vehicle.insuranceCompany || 'N/A'}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[9px] text-slate-400 uppercase">Policy #</p>
-                                        <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 truncate">{vehicle.insurancePolicyNumber}</p>
+                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Policy #</p>
+                                        <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{vehicle.insurancePolicyNumber}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[9px] text-slate-400 uppercase">Expires</p>
-                                        <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">{formatDate(vehicle.insuranceExpiryDate)}</p>
+                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Expires</p>
+                                        <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{formatDate(vehicle.insuranceExpiryDate)}</p>
                                     </div>
                                 </div>
                             </div>
                         )}
-
-                        {/* Dynamic Add/Edit Button */}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setIsEditModalOpen(true);
-                            }}
-                            className="w-full py-2.5 px-4 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest border border-indigo-100 dark:border-indigo-500/20 hover:bg-slate-100 dark:hover:bg-indigo-500/20 transition-all flex items-center justify-center gap-2"
-                        >
-                            <Edit3 className="w-3 h-3" />
-                            {(!vehicle.pucNumber && !vehicle.insurancePolicyNumber)
-                                ? 'Add PUC & Insurance Details'
-                                : 'Edit PUC & Insurance Details'}
-                        </button>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Actions */}
-            <div className="flex gap-2 relative z-10">
+            {/* Main Actions */}
+            <div className="flex gap-3 relative z-10">
                 <motion.button
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={(e) => onAddEntry(e, vehicle.id)}
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-indigo-500/20 dark:shadow-indigo-900/20 flex items-center justify-center gap-2 transition-colors"
+                    className="flex-1 bg-gradient-to-tr from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-indigo-500/20 dark:shadow-indigo-900/40 flex items-center justify-center gap-2 transition-all border border-indigo-400/20"
                 >
-                    <Droplet className="w-4 h-4" /> Fuel
+                    <Droplet className="w-4 h-4" /> Add Fuel
                 </motion.button>
                 <motion.button
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={(e) => onAddService(e)}
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-emerald-500/20 dark:shadow-emerald-900/20 flex items-center justify-center gap-2 transition-colors"
+                    className="flex-1 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-slate-200 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center justify-center gap-2 transition-all border border-slate-200 dark:border-slate-700"
                 >
                     <Wrench className="w-4 h-4" /> Service
                 </motion.button>
             </div>
 
             {/* Mini Stats Footer */}
-            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-white/5 grid grid-cols-3 gap-2 text-center relative z-10">
-                <div>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide">Total Spent</p>
-                    <p className="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1">₹{totalSpent}</p>
+            <div className="mt-8 pt-6 border-t border-slate-200/60 dark:border-white/5 grid grid-cols-3 gap-2 relative z-10">
+                <div className="space-y-1">
+                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter">Total Spent</p>
+                    <p className="text-sm font-black text-slate-900 dark:text-white tracking-tighter truncate">₹{totalSpent.toLocaleString()}</p>
                 </div>
-                <div>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide">Days Ago</p>
-                    <p className={`text-xs font-bold mt-1 ${daysSinceService > 150 ? 'text-red-500 dark:text-red-400 animate-pulse' : 'text-slate-600 dark:text-slate-300'
-                        }`}>
-                        {daysSinceService ?? '-'}
+                <div className="space-y-1 text-center border-x border-slate-200/60 dark:border-white/5 px-2">
+                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter">Last Svc</p>
+                    <p className={`text-sm font-black tracking-tighter ${daysSinceService > 150 ? 'text-red-500 dark:text-red-400' : 'text-slate-900 dark:text-white'}`}>
+                        {daysSinceService ?? '-'} <span className="text-[10px] font-bold text-slate-500">d</span>
                     </p>
                 </div>
-                <div>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide">Fuel Cost</p>
-                    <p className="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1">₹{fuelCost}</p>
+                <div className="space-y-1 text-right">
+                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter">Fuel Cost</p>
+                    <p className="text-sm font-black text-slate-900 dark:text-white tracking-tighter truncate">₹{fuelCost.toLocaleString()}</p>
                 </div>
             </div>
 
@@ -225,7 +228,7 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
                     />
                 )}
             </AnimatePresence>
-        </div>
+        </motion.div>
     );
 };
 

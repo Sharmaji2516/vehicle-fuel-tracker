@@ -126,22 +126,22 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
                                 </span>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 text-sm text-slate-400 border-t border-slate-700/50 pt-3">
+                            <div className="grid grid-cols-2 gap-4 text-base text-slate-400 border-t border-slate-700/50 pt-3">
                                 <div className="flex flex-col">
-                                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-0.5">Trip Distance</span>
+                                    <span className="text-slate-500 text-xs uppercase font-bold tracking-wider mb-0.5">Trip Distance</span>
                                     <span className="text-white font-medium">{entry.tripDistance}</span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-0.5">Fuel Filled</span>
+                                    <span className="text-slate-500 text-xs uppercase font-bold tracking-wider mb-0.5">Fuel Filled</span>
                                     <span className="text-white font-medium">{entry.liters} L</span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-0.5">Efficiency</span>
+                                    <span className="text-slate-500 text-xs uppercase font-bold tracking-wider mb-0.5">Efficiency</span>
                                     <span className="text-cyan-400 font-bold">{entry.efficiency}</span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-0.5">Price / Total</span>
-                                    <span className="text-slate-200">₹{entry.price} / ₹{entry.totalCost}</span>
+                                    <span className="text-slate-500 text-xs uppercase font-bold tracking-wider mb-0.5">Price / Total</span>
+                                    <span className="text-slate-200 font-medium">₹{entry.price} / ₹{entry.totalCost}</span>
                                 </div>
                             </div>
 

@@ -8,12 +8,14 @@ import HistoryTable from './HistoryTable';
 import ServiceHistoryTable from './ServiceHistoryTable';
 import AddServiceForm from './AddServiceForm';
 import MaintenanceAlerts from './MaintenanceAlerts';
-import { Plus, Car, Cloud, CloudOff, RefreshCw, AlertCircle } from 'lucide-react';
+import Analytics from './Analytics';
+import { Plus, Car, Cloud, CloudOff, RefreshCw, AlertCircle, TrendingUp, Activity, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { calculateTotalSpent } from '../utils/calculations';
 
 const Dashboard = () => {
     const { user } = useAuth();
-    const { vehicles, getVehicleEntries, addVehicle, syncStatus } = useFuel();
+    const { vehicles, getVehicleEntries, addVehicle, syncStatus, getVehicleServiceEntries } = useFuel();
     const [selectedVehicleId, setSelectedVehicleId] = useState(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
@@ -22,6 +24,14 @@ const Dashboard = () => {
     const [viewHistoryId, setViewHistoryId] = useState(null);
     const [historyType, setHistoryType] = useState('fuel'); // 'fuel' or 'service'
     const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
+
+    // Calculate total garage stats
+    const totalVehicles = vehicles.length;
+    const totalSpent = vehicles.reduce((acc, v) => {
+        const fuelEntries = getVehicleEntries(v.id);
+        const serviceEntries = getVehicleServiceEntries(v.id);
+        return acc + Number(calculateTotalSpent(fuelEntries, serviceEntries));
+    }, 0);
 
     const handleAddEntry = (vehicleId) => {
         setSelectedVehicleId(vehicleId);
@@ -58,40 +68,86 @@ const Dashboard = () => {
 
     const getSyncIcon = () => {
         switch (syncStatus) {
-            case 'synced': return <Cloud className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />;
-            case 'syncing': return <RefreshCw className="w-4 h-4 text-indigo-500 dark:text-indigo-400 animate-spin" />;
+            case 'synced': return <Cloud className="w-4 h-4 text-emerald-500" />;
+            case 'syncing': return <RefreshCw className="w-4 h-4 text-indigo-500 animate-spin" />;
             case 'offline': return <CloudOff className="w-4 h-4 text-slate-400" />;
-            case 'migrating': return <RefreshCw className="w-4 h-4 text-amber-500 dark:text-amber-400 animate-spin" />;
-            default: return <AlertCircle className="w-4 h-4 text-red-500 dark:text-red-400" />;
+            case 'migrating': return <RefreshCw className="w-4 h-4 text-amber-500 animate-spin" />;
+            default: return <AlertCircle className="w-4 h-4 text-red-500" />;
         }
     };
 
     return (
-        <div className="space-y-12">
+        <div className="space-y-16 pb-20">
             <MaintenanceAlerts />
-            {/* Header Section */}
-            <section className="relative">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+
+            {/* Garage Overview Summary */}
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="glass-card p-6 rounded-[2rem] flex items-center gap-5 border-indigo-500/10"
+                >
+                    <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                        <Car className="w-7 h-7" />
+                    </div>
                     <div>
-                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                            <Car className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Total Garage</p>
+                        <h4 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{totalVehicles} <span className="text-sm font-bold text-slate-400 uppercase">Vehicles</span></h4>
+                    </div>
+                </motion.div>
+
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="glass-card p-6 rounded-[2rem] flex items-center gap-5 border-emerald-500/10"
+                >
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                        <TrendingUp className="w-7 h-7" />
+                    </div>
+                    <div>
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Total Investment</p>
+                        <h4 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">₹{totalSpent.toLocaleString()}</h4>
+                    </div>
+                </motion.div>
+
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="glass-card p-6 rounded-[2rem] flex items-center gap-5 border-amber-500/10"
+                >
+                    <div className="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500">
+                        {getSyncIcon()}
+                    </div>
+                    <div>
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Cloud Sync</p>
+                        <h4 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+                            {syncStatus === 'synced' ? 'Protected' : syncStatus}
+                        </h4>
+                    </div>
+                </motion.div>
+            </section>
+
+            {/* Analytics Section */}
+            <Analytics />
+
+            {/* Garage Header */}
+            <section className="relative">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10 text-center md:text-left">
+                    <div className="space-y-1">
+                        <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight flex items-center justify-center md:justify-start gap-4">
                             My Garage
+                            <span className="text-xs bg-indigo-500 text-white px-3 py-1 rounded-full font-black uppercase tracking-widest">{vehicles.length}</span>
                         </h2>
-                        <div className="flex items-center gap-3 mt-2">
-                            <div className="glass px-3 py-1 rounded-full flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300">
-                                {getSyncIcon()}
-                                <span className="uppercase tracking-wider">
-                                    {syncStatus === 'synced' ? 'Cloud Synced' : syncStatus}
-                                </span>
-                            </div>
-                        </div>
+                        <p className="text-base font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Manage your vehicles and track efficiency</p>
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex flex-wrap justify-center gap-4">
                         {vehicles.length === 0 && (
                             <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                                 onClick={() => {
                                     const defaults = [
                                         { name: 'Activa 5G', type: 'Bike', fuelType: 'Petrol' },
@@ -100,19 +156,19 @@ const Dashboard = () => {
                                     ];
                                     defaults.forEach(v => addVehicle(v));
                                 }}
-                                className="bg-emerald-600/90 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-emerald-500/20 dark:shadow-emerald-900/20 flex items-center gap-2"
+                                className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-6 py-3.5 rounded-2xl text-sm font-black uppercase tracking-widest border border-emerald-500/20 hover:bg-emerald-500/20 transition-all"
                             >
                                 🚀 Setup Demo
                             </motion.button>
                         )}
                         <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ scale: 1.02, y: -2 }}
+                            whileTap={{ scale: 0.98 }}
                             onClick={() => setIsAddVehicleModalOpen(true)}
-                            className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-500/20 dark:shadow-indigo-900/20 flex items-center gap-2"
+                            className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3.5 rounded-2xl text-sm font-black uppercase tracking-[0.2em] shadow-2xl shadow-indigo-500/30 dark:shadow-indigo-900/40 flex items-center gap-3 transition-all"
                         >
                             <Plus className="w-5 h-5" />
-                            Add Vehicle
+                            Add New Vehicle
                         </motion.button>
                     </div>
                 </div>
@@ -121,27 +177,30 @@ const Dashboard = () => {
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="text-center py-24 glass rounded-3xl border-dashed border-2 border-slate-300 dark:border-slate-700"
+                        className="text-center py-32 glass-card rounded-[3rem] border-dashed border-2 border-slate-200 dark:border-slate-800"
                     >
-                        <Car className="w-16 h-16 text-slate-400 dark:text-slate-600 mx-auto mb-4" />
-                        <p className="text-slate-500 dark:text-slate-400 text-xl font-medium mb-2">Your garage is empty</p>
-                        <p className="text-slate-400 dark:text-slate-500">Add a vehicle to start tracking fuel and maintainence.</p>
+                        <div className="w-24 h-24 bg-slate-100 dark:bg-slate-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Car className="w-12 h-12 text-slate-300 dark:text-slate-700" />
+                        </div>
+                        <h3 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-2">Your garage is empty</h3>
+                        <p className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-sm">Add your first vehicle to unlock insights</p>
                     </motion.div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <AnimatePresence>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                        <AnimatePresence mode="popLayout">
                             {vehicles.map((vehicle, index) => (
                                 <motion.div
                                     key={vehicle.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.1 }}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    transition={{ delay: index * 0.05 }}
                                     layout
                                 >
                                     <VehicleCard
                                         vehicle={vehicle}
                                         entries={getVehicleEntries(vehicle.id)}
-                                        serviceEntries={useFuel().getVehicleServiceEntries(vehicle.id)}
+                                        serviceEntries={getVehicleServiceEntries(vehicle.id)}
                                         onAddEntry={(e, id) => {
                                             e.stopPropagation();
                                             handleAddEntry(vehicle.id);
@@ -163,93 +222,101 @@ const Dashboard = () => {
                 )}
             </section>
 
-            {/* History Section */}
+            {/* History Section - Floating Overlay or Content Section */}
             <AnimatePresence>
                 {viewHistoryId && (
                     <motion.section
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden"
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 50 }}
+                        className="relative z-20"
                     >
-                        <div className="glass rounded-3xl p-6 md:p-8">
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 border-b border-slate-200 dark:border-white/5 pb-6">
-                                <div>
-                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-                                        {vehicles.find(v => v.id === viewHistoryId)?.name} History
+                        <div className="glass-card rounded-[2.5rem] p-8 md:p-12 border-indigo-500/20 shadow-2xl">
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12 border-b border-slate-200 dark:border-white/5 pb-10">
+                                <div className="space-y-2">
+                                    <h3 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter uppercase">
+                                        {vehicles.find(v => v.id === viewHistoryId)?.name} 
+                                        <span className="text-indigo-500 ml-3">Logs</span>
                                     </h3>
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm">
-                                        Viewing {historyType} records
+                                    <p className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
+                                        Detailed records for fuel and maintenance
                                     </p>
                                 </div>
-                                <div className="flex bg-slate-100 dark:bg-slate-900/50 p-1 rounded-xl">
+                                <div className="flex items-center gap-3 bg-slate-100 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
                                     <button
                                         onClick={() => setHistoryType('fuel')}
-                                        className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${historyType === 'fuel'
-                                            ? 'bg-indigo-600 text-white shadow-lg'
-                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                        className={`px-8 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${historyType === 'fuel'
+                                            ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20'
+                                            : 'text-slate-500 dark:text-slate-400 hover:text-indigo-500'
                                             }`}
                                     >
-                                        Fuel
+                                        Fuel Logs
                                     </button>
+
                                     <button
                                         onClick={() => setHistoryType('service')}
-                                        className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${historyType === 'service'
-                                            ? 'bg-emerald-600 text-white shadow-lg'
-                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                        className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${historyType === 'service'
+                                            ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-500/20'
+                                            : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500'
                                             }`}
                                     >
-                                        Service
+                                        Services
                                     </button>
+                                    <div className="w-px h-6 bg-slate-300 dark:bg-slate-700 mx-2" />
                                     <button
                                         onClick={() => setViewHistoryId(null)}
-                                        className="ml-2 px-4 py-2 text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
+                                        className="p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
                                     >
-                                        Close
+                                        <X className="w-5 h-5" />
                                     </button>
                                 </div>
                             </div>
 
-                            {historyType === 'fuel' ? (
-                                <HistoryTable
-                                    vehicleId={viewHistoryId}
-                                    onEdit={(entry) => handleEditEntry(entry, viewHistoryId)}
-                                />
-                            ) : (
-                                <ServiceHistoryTable
-                                    vehicleId={viewHistoryId}
-                                    onEdit={(entry) => handleEditService(entry, viewHistoryId)}
-                                />
-                            )}
+                            <div className="min-h-[400px]">
+                                {historyType === 'fuel' ? (
+                                    <HistoryTable
+                                        vehicleId={viewHistoryId}
+                                        onEdit={(entry) => handleEditEntry(entry, viewHistoryId)}
+                                    />
+                                ) : (
+                                    <ServiceHistoryTable
+                                        vehicleId={viewHistoryId}
+                                        onEdit={(entry) => handleEditService(entry, viewHistoryId)}
+                                    />
+                                )}
+                            </div>
                         </div>
                     </motion.section>
                 )}
             </AnimatePresence>
 
             {/* Modals */}
-            {isAddModalOpen && (
-                <AddEntryForm
-                    vehicleId={selectedVehicleId}
-                    initialData={editingEntry}
-                    onClose={() => setIsAddModalOpen(false)}
-                />
-            )}
+            <AnimatePresence>
+                {isAddModalOpen && (
+                    <AddEntryForm
+                        vehicleId={selectedVehicleId}
+                        initialData={editingEntry}
+                        onClose={() => setIsAddModalOpen(false)}
+                    />
+                )}
 
-            {isAddVehicleModalOpen && (
-                <AddVehicleForm
-                    onClose={() => setIsAddVehicleModalOpen(false)}
-                />
-            )}
+                {isAddVehicleModalOpen && (
+                    <AddVehicleForm
+                        onClose={() => setIsAddVehicleModalOpen(false)}
+                    />
+                )}
 
-            {isAddServiceModalOpen && (
-                <AddServiceForm
-                    vehicleId={selectedVehicleId}
-                    initialData={editingService}
-                    onClose={() => setIsAddServiceModalOpen(false)}
-                />
-            )}
+                {isAddServiceModalOpen && (
+                    <AddServiceForm
+                        vehicleId={selectedVehicleId}
+                        initialData={editingService}
+                        onClose={() => setIsAddServiceModalOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 };
+
 
 export default Dashboard;

@@ -78,12 +78,12 @@ const ServiceHistoryTable = ({ vehicleId, onEdit }) => {
                             </div>
                             <div className="bg-slate-700/30 p-3 rounded-lg border border-slate-700/50 flex justify-between items-center">
                                 <div>
-                                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider block mb-1">Service Type</span>
-                                    <p className="text-emerald-400 font-bold text-lg">{entry.serviceType}</p>
+                                    <span className="text-slate-500 text-xs uppercase font-bold tracking-wider block mb-1">Service Type</span>
+                                    <p className="text-emerald-400 font-bold text-xl">{entry.serviceType}</p>
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider block mb-1">Mode</span>
-                                    <span className={`text-xs font-bold uppercase ${entry.paymentMode === 'Online' ? 'text-blue-400' : 'text-amber-400'}`}>
+                                    <span className="text-slate-500 text-xs uppercase font-bold tracking-wider block mb-1">Mode</span>
+                                    <span className={`text-sm font-bold uppercase ${entry.paymentMode === 'Online' ? 'text-blue-400' : 'text-amber-400'}`}>
                                         {entry.paymentMode === 'Online' ? '💳 Online' : '💵 Cash'}
                                     </span>
                                 </div>

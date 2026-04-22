@@ -16,11 +16,13 @@ const MaintenanceAlerts = () => {
         });
 
         const criticalOrWarningAlerts = allAlerts.filter(a => a.level === 'critical' || a.level === 'warning');
-
         setAlerts(criticalOrWarningAlerts);
 
-        if (criticalOrWarningAlerts.length > 0) {
-            // Small delay to let the dashboard render
+        // Check if alerts were already dismissed today
+        const dismissedDate = localStorage.getItem('maintenanceAlertsDismissed');
+        const today = new Date().toDateString();
+
+        if (criticalOrWarningAlerts.length > 0 && dismissedDate !== today) {
             const timer = setTimeout(() => {
                 setIsOpen(true);
             }, 1000);
@@ -28,7 +30,11 @@ const MaintenanceAlerts = () => {
         }
     }, [vehicles, getVehicleServiceEntries]);
 
-    // If no alerts, don't render anything, not even the banner
+    const handleDismiss = () => {
+        setIsOpen(false);
+        localStorage.setItem('maintenanceAlertsDismissed', new Date().toDateString());
+    };
+
     if (alerts.length === 0) return null;
 
     const criticalCount = alerts.filter(a => a.level === 'critical').length;
@@ -37,29 +43,32 @@ const MaintenanceAlerts = () => {
         <>
             {/* Persistent Floating Banner */}
             <AnimatePresence>
-                {!isOpen && alerts.length > 0 && (
+                {!isOpen && alerts.length > 0 && localStorage.getItem('maintenanceAlertsDismissed') !== new Date().toDateString() && (
                     <motion.div
                         initial={{ y: -100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: -100, opacity: 0 }}
                         onClick={() => setIsOpen(true)}
-                        className="fixed top-0 left-0 right-0 z-[10001] flex items-center justify-center p-2"
+                        className="fixed top-6 left-0 right-0 z-[10001] flex items-center justify-center px-6 pointer-events-none"
                     >
-                        <button className={`w-full max-w-4xl flex items-center justify-between gap-3 px-4 py-3 rounded-2xl shadow-xl border-2 ${criticalCount > 0
-                            ? 'bg-rose-600 border-rose-400 text-white'
-                            : 'bg-amber-500 border-amber-300 text-white'
-                            } hover:scale-[1.01] active:scale-[0.99] transition-all group shadow-rose-500/20`}
+                        <button className={`pointer-events-auto flex items-center gap-4 px-6 py-4 rounded-[2rem] shadow-2xl backdrop-blur-xl border-2 transition-all hover:scale-[1.02] active:scale-[0.98] group ${criticalCount > 0
+                            ? 'bg-rose-500/90 border-rose-400 text-white shadow-rose-500/20'
+                            : 'bg-amber-500/90 border-amber-300 text-white shadow-amber-500/20'
+                            }`}
                         >
-                            <div className="flex items-center gap-3">
-                                <div className="p-1.5 rounded-lg bg-white/20 text-white animate-pulse">
-                                    <AlertTriangle className="w-4 h-4" />
-                                </div>
-                                <span className="text-[11px] font-black uppercase tracking-[0.15em] whitespace-nowrap">
+                            <div className="p-2 rounded-xl bg-white/20 text-white animate-pulse">
+                                <AlertTriangle className="w-5 h-5" />
+                            </div>
+                            <div className="flex flex-col items-start">
+                                <span className="text-xs font-black uppercase tracking-[0.15em] leading-none">
+                                    Garage Alert
+                                </span>
+                                <span className="text-[10px] font-bold opacity-90 mt-1">
                                     {alerts.length} Urgent Maintenance {alerts.length === 1 ? 'Action' : 'Actions'} Required
                                 </span>
                             </div>
-                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase bg-black/10 px-3 py-1 rounded-full border border-white/20">
-                                View Details <ChevronRight className="w-3.5 h-3.5" />
+                            <div className="ml-2 p-1.5 rounded-full bg-black/10 group-hover:bg-black/20 transition-colors">
+                                <ChevronRight className="w-4 h-4" />
                             </div>
                         </button>
                     </motion.div>
@@ -90,7 +99,7 @@ const MaintenanceAlerts = () => {
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => setIsOpen(false)}
+                                    onClick={handleDismiss}
                                     className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-full transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-white"
                                 >
                                     <X className="w-6 h-6" />
@@ -150,7 +159,7 @@ const MaintenanceAlerts = () => {
                             {/* Footer Component */}
                             <div className="p-6 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700">
                                 <button
-                                    onClick={() => setIsOpen(false)}
+                                    onClick={handleDismiss}
                                     className="w-full bg-slate-900 dark:bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-[0.2em] text-xs"
                                 >
                                     I'll fix it soon

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useFuel } from '../context/FuelContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Calendar, Gauge, Wrench, IndianRupee, CreditCard, Banknote, Save } from 'lucide-react';
 
 const AddServiceForm = ({ vehicleId, onClose, initialData }) => {
     const { addServiceEntry, editServiceEntry, vehicles, getVehicleEntries, getVehicleServiceEntries } = useFuel();
@@ -55,94 +57,143 @@ const AddServiceForm = ({ vehicleId, onClose, initialData }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl animate-fade-in-up">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-bold text-white">{initialData ? 'Edit Service' : 'Add Service'} for {vehicle?.name}</h3>
-                    <button onClick={onClose} className="text-slate-400 hover:text-white">✕</button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-400 mb-1">Date</label>
-                        <input
-                            type="date"
-                            name="date"
-                            value={formData.date}
-                            onChange={handleChange}
-                            required
-                            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-slate-400 mb-1">Odometer (km)</label>
-                        <input
-                            type="number"
-                            name="odometer"
-                            value={formData.odometer}
-                            onChange={handleChange}
-                            required
-                            placeholder="e.g. 15000"
-                            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-slate-400 mb-1">Service Type</label>
-                        <input
-                            type="text"
-                            name="serviceType"
-                            value={formData.serviceType}
-                            onChange={handleChange}
-                            required
-                            placeholder="e.g. Oil Change, Tire Rotation"
-                            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-slate-400 mb-1">Cost</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            name="cost"
-                            value={formData.cost}
-                            onChange={handleChange}
-                            placeholder="₹ 0.00"
-                            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                        />
-                    </div>
-
-
-                    <div>
-                        <label className="block text-sm font-medium text-slate-400 mb-2">Payment Mode</label>
-                        <div className="flex gap-4">
-                            {['Cash', 'Online'].map(mode => (
-                                <button
-                                    key={mode}
-                                    type="button"
-                                    onClick={() => setFormData(prev => ({ ...prev, paymentMode: mode }))}
-                                    className={`flex-1 py-3 rounded-xl border font-bold transition-all ${formData.paymentMode === mode
-                                        ? 'bg-emerald-600 border-emerald-500 text-white shadow-lg'
-                                        : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
-                                        }`}
-                                >
-                                    {mode === 'Cash' ? '💵 Cash' : '💳 Online'}
-                                </button>
-                            ))}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onClose}
+                className="absolute inset-0 bg-slate-950/60 backdrop-blur-md"
+            />
+            
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[2.5rem] w-full max-w-lg shadow-2xl overflow-hidden"
+            >
+                {/* Header Decoration */}
+                <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-emerald-500/10 to-transparent pointer-events-none" />
+                
+                <div className="relative p-8 md:p-10">
+                    <div className="flex justify-between items-center mb-8">
+                        <div>
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                                {initialData ? 'Edit Service' : 'Service Entry'}
+                            </h3>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 mt-1">
+                                FOR {vehicle?.name}
+                            </p>
                         </div>
+                        <button 
+                            onClick={onClose}
+                            className="p-3 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 hover:text-rose-500 transition-colors shadow-sm"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={isSaving}
-                        className={`w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3 rounded-xl shadow-lg transform transition hover:-translate-y-0.5 ${isSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
-                    >
-                        {isSaving ? 'Saving...' : (initialData ? 'Update Service Record' : 'Save Service Record')}
-                    </button>
-                </form>
-            </div>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    <Calendar className="w-3.5 h-3.5" /> Date
+                                </label>
+                                <input
+                                    type="date"
+                                    name="date"
+                                    value={formData.date}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl p-4 text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 outline-none transition-all shadow-inner"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    <Gauge className="w-3.5 h-3.5" /> Odometer (km)
+                                </label>
+                                <input
+                                    type="number"
+                                    name="odometer"
+                                    value={formData.odometer}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder="000000"
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl p-4 text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 outline-none transition-all shadow-inner"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                <Wrench className="w-3.5 h-3.5" /> Service Type
+                            </label>
+                            <input
+                                type="text"
+                                name="serviceType"
+                                value={formData.serviceType}
+                                onChange={handleChange}
+                                required
+                                placeholder="e.g. Engine Oil, Brake Pads"
+                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl p-4 text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 outline-none transition-all shadow-inner"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                <IndianRupee className="w-3.5 h-3.5" /> Service Cost
+                            </label>
+                            <div className="relative group">
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    name="cost"
+                                    value={formData.cost}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder="0.00"
+                                    className="w-full bg-emerald-500/5 dark:bg-emerald-500/10 border-2 border-emerald-500/20 rounded-2xl p-6 pl-12 text-2xl font-black text-emerald-600 dark:text-emerald-400 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
+                                />
+                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-500/50 font-black text-xl">₹</div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                Payment Method
+                            </label>
+                            <div className="grid grid-cols-2 gap-4">
+                                {[
+                                    { id: 'Cash', icon: Banknote, label: 'Cash' },
+                                    { id: 'Online', icon: CreditCard, label: 'Digital' }
+                                ].map(mode => (
+                                    <button
+                                        key={mode.id}
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, paymentMode: mode.id }))}
+                                        className={`flex items-center justify-center gap-3 py-4 rounded-2xl border-2 font-black uppercase tracking-widest text-xs transition-all ${formData.paymentMode === mode.id
+                                            ? 'bg-emerald-600 border-emerald-500 text-white shadow-xl shadow-emerald-500/20'
+                                            : 'bg-white dark:bg-slate-950 border-slate-100 dark:border-white/5 text-slate-400 hover:border-emerald-500/20'
+                                            }`}
+                                    >
+                                        <mode.icon className="w-4 h-4" />
+                                        {mode.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={isSaving}
+                            className="w-full bg-gradient-to-tr from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black py-5 rounded-[1.5rem] shadow-2xl shadow-emerald-500/30 uppercase tracking-[0.2em] text-xs transition-all active:scale-[0.98] mt-4 disabled:opacity-50"
+                        >
+                            {isSaving ? 'Processing...' : (initialData ? 'Update Service Record' : 'Save Service Record')}
+                        </button>
+                    </form>
+                </div>
+            </motion.div>
         </div>
     );
 };
