@@ -86,29 +86,6 @@ const Layout = ({ children }) => {
                         </motion.div>
                     </AnimatePresence>
                 </main>
-
-                <footer className="mt-12 bg-slate-900 text-slate-400 py-10 px-4 sm:px-6 lg:px-8 border-t border-slate-800">
-                    <div className="max-w-7xl mx-auto flex flex-col items-center gap-8">
-                        {/* Credits Badge */}
-                        <div className="inline-flex items-center gap-3 bg-slate-800/50 px-5 py-2.5 rounded-full border border-slate-700 backdrop-blur-sm group hover:border-indigo-500/50 transition-all cursor-pointer shadow-lg">
-                            <div className="w-7 h-7 rounded flex items-center justify-center overflow-hidden bg-white shadow-inner p-1">
-                                <img src="/chittortech_logo.png" alt="ChittorTech Logo" className="w-full h-full object-contain" />
-                            </div>
-                            <span className="text-sm font-bold tracking-wide">
-                                Developed & Maintained by <span className="text-emerald-400 group-hover:text-emerald-300 transition-colors">ChittorTech</span>
-                            </span>
-                        </div>
-
-                        <div className="text-center space-y-2">
-                            <p className="text-xs text-slate-500 font-medium">
-                                © {new Date().getFullYear()} FuelTracker. All rights reserved.
-                            </p>
-                            <p className="text-[10px] text-slate-600 uppercase tracking-[0.2em] font-black font-mono">
-                                Fuel Efficiency & Vehicle Management
-                            </p>
-                        </div>
-                    </div>
-                </footer>
             </div>
         </div>
     );
