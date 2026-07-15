@@ -84,3 +84,15 @@
     50% { transform: translateY(-10px); }
   }
 }
+
+/* Chrome/Edge autofill style overrides to match light inputs */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important; /* White background */
+  -webkit-text-fill-color: #0f172a !important; /* Dark text */
+  caret-color: #0f172a !important;
+  border-color: #cbd5e1 !important; /* Slate-300 border */
+  transition: background-color 5000s ease-in-out 0s;
+}
