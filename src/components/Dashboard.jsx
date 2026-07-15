@@ -9,13 +9,15 @@ import ServiceHistoryTable from './ServiceHistoryTable';
 import AddServiceForm from './AddServiceForm';
 import MaintenanceAlerts from './MaintenanceAlerts';
 import Analytics from './Analytics';
-import { Plus, Car, Cloud, CloudOff, RefreshCw, AlertCircle, TrendingUp, Activity, X } from 'lucide-react';
+import { Plus, Car, Cloud, CloudOff, RefreshCw, AlertCircle, TrendingUp, Activity, X, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { calculateTotalSpent } from '../utils/calculations';
+import { useNotification } from '../context/NotificationContext';
 
 const Dashboard = () => {
     const { user } = useAuth();
     const { vehicles, getVehicleEntries, addVehicle, syncStatus, getVehicleServiceEntries } = useFuel();
+    const { showNotification } = useNotification();
     const [selectedVehicleId, setSelectedVehicleId] = useState(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
@@ -24,6 +26,139 @@ const Dashboard = () => {
     const [viewHistoryId, setViewHistoryId] = useState(null);
     const [historyType, setHistoryType] = useState('fuel'); // 'fuel' or 'service'
     const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
+
+    const handleExportAll = () => {
+        try {
+            const allRecords = [];
+
+            vehicles.forEach(vehicle => {
+                const fuelEntries = getVehicleEntries(vehicle.id);
+                const serviceEntries = getVehicleServiceEntries(vehicle.id);
+
+                const sortedFuel = [...fuelEntries].sort((a, b) => new Date(a.date) - new Date(b.date));
+                const fuelEntriesWithMileage = fuelEntries.map(entry => {
+                    const currentIdx = sortedFuel.findIndex(e => e.id === entry.id);
+                    const prevEntry = currentIdx > 0 ? sortedFuel[currentIdx - 1] : null;
+
+                    let efficiency = "--";
+                    let tripDistance = "--";
+                    if (prevEntry) {
+                        const distance = entry.odometer - prevEntry.odometer;
+                        tripDistance = distance + " km";
+                        if (entry.liters > 0) {
+                            efficiency = (distance / entry.liters).toFixed(2) + " km/L";
+                        }
+                    }
+                    return { ...entry, efficiency, tripDistance };
+                });
+
+                fuelEntriesWithMileage.forEach(entry => {
+                    allRecords.push({
+                        vehicleName: vehicle.name,
+                        vehicleNumber: vehicle.vehicleNumber || '--',
+                        date: entry.date,
+                        type: 'Fuel',
+                        odometer: entry.odometer,
+                        liters: entry.liters,
+                        price: entry.price,
+                        totalCost: entry.totalCost,
+                        tripDistance: entry.tripDistance,
+                        efficiency: entry.efficiency,
+                        serviceType: '--',
+                        paymentMode: entry.paymentMode || 'Cash'
+                    });
+                });
+
+                serviceEntries.forEach(entry => {
+                    allRecords.push({
+                        vehicleName: vehicle.name,
+                        vehicleNumber: vehicle.vehicleNumber || '--',
+                        date: entry.date,
+                        type: 'Service',
+                        odometer: entry.odometer,
+                        liters: '--',
+                        price: '--',
+                        totalCost: entry.cost,
+                        tripDistance: '--',
+                        efficiency: '--',
+                        serviceType: entry.serviceType,
+                        paymentMode: entry.paymentMode || 'Cash'
+                    });
+                });
+            });
+
+            if (allRecords.length === 0) {
+                showNotification('No data to export', 'info');
+                return;
+            }
+
+            allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const headers = [
+                "Vehicle Name",
+                "Vehicle Number",
+                "Date",
+                "Record Type",
+                "Odometer (km)",
+                "Fuel Filled (L)",
+                "Price per Liter (INR)",
+                "Total Cost (INR)",
+                "Trip Distance (km)",
+                "Fuel Efficiency (km/L)",
+                "Service Details",
+                "Payment Mode"
+            ];
+
+            const rows = allRecords.map(rec => [
+                rec.vehicleName,
+                rec.vehicleNumber,
+                rec.date,
+                rec.type,
+                rec.odometer,
+                rec.liters,
+                rec.price,
+                rec.totalCost,
+                rec.tripDistance,
+                rec.efficiency,
+                rec.serviceType,
+                rec.paymentMode
+            ]);
+
+            const formatDateStr = (dateStr) => {
+                try {
+                    const d = new Date(dateStr);
+                    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                } catch {
+                    return dateStr;
+                }
+            };
+
+            const csvContent = [
+                headers.join(","),
+                ...rows.map(row => {
+                    const formattedRow = [...row];
+                    formattedRow[2] = formatDateStr(formattedRow[2]);
+                    return formattedRow.map(val => `"${String(val).replace(/"/g, '""')}"`).join(",");
+                })
+            ].join("\n");
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", `all_vehicles_fuel_and_service_logs.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showNotification('All logs exported successfully!', 'success');
+        } catch (error) {
+            console.error('Export all failed:', error);
+            showNotification('Failed to export all logs', 'error');
+        }
+    };
 
     // Calculate total garage stats
     const totalVehicles = vehicles.length;
@@ -159,6 +294,17 @@ const Dashboard = () => {
                                 className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-6 py-3.5 rounded-2xl text-sm font-black uppercase tracking-widest border border-emerald-500/20 hover:bg-emerald-500/20 transition-all"
                             >
                                 🚀 Setup Demo
+                            </motion.button>
+                        )}
+                        {vehicles.length > 0 && (
+                            <motion.button
+                                whileHover={{ scale: 1.02, y: -2 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={handleExportAll}
+                                className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white px-6 py-3.5 rounded-2xl text-sm font-black uppercase tracking-wider shadow-xl shadow-emerald-500/10 hover:shadow-emerald-500/20 flex items-center gap-3 transition-all"
+                            >
+                                <Download className="w-5 h-5" />
+                                Export All Data
                             </motion.button>
                         )}
                         <motion.button

@@ -3,9 +3,10 @@ import { useFuel } from '../context/FuelContext';
 import { useNotification } from '../context/NotificationContext';
 import { formatDate } from '../utils/calculations';
 import ConfirmDialog from './ConfirmDialog';
+import { Download } from 'lucide-react';
 
 const ServiceHistoryTable = ({ vehicleId, onEdit }) => {
-    const { getVehicleServiceEntries, deleteServiceEntry } = useFuel();
+    const { getVehicleServiceEntries, deleteServiceEntry, vehicles } = useFuel();
     const { showNotification } = useNotification();
     const entries = getVehicleServiceEntries(vehicleId);
     const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -15,6 +16,50 @@ const ServiceHistoryTable = ({ vehicleId, onEdit }) => {
             await deleteServiceEntry(deleteConfirm.id);
             showNotification('Service entry deleted successfully!', 'success');
             setDeleteConfirm(null);
+        }
+    };
+
+    const handleExport = () => {
+        try {
+            const headers = [
+                "Date",
+                "Odometer (km)",
+                "Service Type",
+                "Cost (INR)",
+                "Payment Mode"
+            ];
+            
+            const rows = entries.map(entry => [
+                formatDate(entry.date),
+                entry.odometer,
+                entry.serviceType,
+                entry.cost,
+                entry.paymentMode || 'Cash'
+            ]);
+
+            const csvContent = [
+                headers.join(","),
+                ...rows.map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(","))
+            ].join("\n");
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            
+            const vehicleName = vehicles?.find(v => v.id === vehicleId)?.name || 'vehicle';
+            const fileName = `${vehicleName.toLowerCase().replace(/\s+/g, '_')}_service_logs.csv`;
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", fileName);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('Services exported successfully!', 'success');
+        } catch (error) {
+            console.error('Export failed:', error);
+            showNotification('Failed to export services', 'error');
         }
     };
 
@@ -29,6 +74,16 @@ const ServiceHistoryTable = ({ vehicleId, onEdit }) => {
     return (
         <>
             <div className="space-y-4">
+                <div className="flex justify-end">
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-wider"
+                    >
+                        <Download className="w-4.5 h-4.5" />
+                        Export to Excel
+                    </button>
+                </div>
+
                 {/* Desktop Table View */}
                 <div className="hidden md:block overflow-x-auto bg-slate-800 rounded-xl border border-slate-700 shadow-xl">
                     <table className="w-full text-left text-sm text-slate-400">
