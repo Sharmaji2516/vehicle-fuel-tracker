@@ -14,7 +14,7 @@ const Layout = ({ children }) => {
             "min-h-screen font-sans transition-colors duration-300",
             isDark ? "dark" : ""
         )}>
-            <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300">
+            <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300 flex flex-col">
                 {/* Ambient Background Glow */}
                 <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden opacity-50 dark:opacity-100">
                     <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-indigo-600/10 blur-[150px] animate-pulse-slow" />
@@ -74,7 +74,7 @@ const Layout = ({ children }) => {
                 </nav>
 
                 {/* Main Content */}
-                <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <main className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex-grow">
                     <AnimatePresence mode="wait">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -86,6 +86,11 @@ const Layout = ({ children }) => {
                         </motion.div>
                     </AnimatePresence>
                 </main>
+
+                {/* Footer */}
+                <footer className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 border-t border-slate-200 dark:border-white/5 text-center text-xs text-slate-400 dark:text-slate-500 mt-auto">
+                    <p>© {new Date().getFullYear()} Developed by <a href="https://chittortech.online" target="_blank" rel="dofollow" className="text-indigo-600 dark:text-indigo-400 font-extrabold hover:underline">ChittorTech</a>. All rights reserved.</p>
+                </footer>
             </div>
         </div>
     );
