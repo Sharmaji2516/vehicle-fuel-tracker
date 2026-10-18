@@ -8,10 +8,9 @@ import HistoryTable from './HistoryTable';
 import ServiceHistoryTable from './ServiceHistoryTable';
 import AddServiceForm from './AddServiceForm';
 import MaintenanceAlerts from './MaintenanceAlerts';
-import Analytics from './Analytics';
-import { Plus, Car, Cloud, CloudOff, RefreshCw, AlertCircle, TrendingUp, Activity, X, Download } from 'lucide-react';
+import { Plus, Car, TrendingUp, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { calculateTotalSpent } from '../utils/calculations';
+import { calculateTotalSpent, getProcessedFuelEntries } from '../utils/calculations';
 import { useNotification } from '../context/NotificationContext';
 
 const Dashboard = () => {
@@ -34,23 +33,7 @@ const Dashboard = () => {
             vehicles.forEach(vehicle => {
                 const fuelEntries = getVehicleEntries(vehicle.id);
                 const serviceEntries = getVehicleServiceEntries(vehicle.id);
-
-                const sortedFuel = [...fuelEntries].sort((a, b) => new Date(a.date) - new Date(b.date));
-                const fuelEntriesWithMileage = fuelEntries.map(entry => {
-                    const currentIdx = sortedFuel.findIndex(e => e.id === entry.id);
-                    const prevEntry = currentIdx > 0 ? sortedFuel[currentIdx - 1] : null;
-
-                    let efficiency = "--";
-                    let tripDistance = "--";
-                    if (prevEntry) {
-                        const distance = entry.odometer - prevEntry.odometer;
-                        tripDistance = distance + " km";
-                        if (entry.liters > 0) {
-                            efficiency = (distance / entry.liters).toFixed(2) + " km/L";
-                        }
-                    }
-                    return { ...entry, efficiency, tripDistance };
-                });
+                const fuelEntriesWithMileage = getProcessedFuelEntries(fuelEntries);
 
                 fuelEntriesWithMileage.forEach(entry => {
                     allRecords.push({
@@ -201,41 +184,17 @@ const Dashboard = () => {
         setIsAddServiceModalOpen(true);
     };
 
-    const getSyncIcon = () => {
-        switch (syncStatus) {
-            case 'synced': return <Cloud className="w-4 h-4 text-emerald-500" />;
-            case 'syncing': return <RefreshCw className="w-4 h-4 text-indigo-500 animate-spin" />;
-            case 'offline': return <CloudOff className="w-4 h-4 text-slate-400" />;
-            case 'migrating': return <RefreshCw className="w-4 h-4 text-amber-500 animate-spin" />;
-            default: return <AlertCircle className="w-4 h-4 text-red-500" />;
-        }
-    };
 
     return (
         <div className="space-y-16 pb-20">
             <MaintenanceAlerts />
 
-            {/* Garage Overview Summary */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+            {/* Total Investment Card */}
+            <section className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] flex items-center gap-4 sm:gap-5 border-indigo-500/10"
-                >
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 shrink-0">
-                        <Car className="w-6 h-6 sm:w-7 sm:h-7" />
-                    </div>
-                    <div>
-                        <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-slate-400">Total Garage</p>
-                        <h4 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{totalVehicles} <span className="text-xs sm:text-sm font-bold text-slate-400 uppercase">Vehicles</span></h4>
-                    </div>
-                </motion.div>
-
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] flex items-center gap-4 sm:gap-5 border-emerald-500/10"
+                    className="glass-card p-5 sm:p-6 rounded-2xl sm:rounded-[2rem] flex items-center gap-4 sm:gap-5 border-emerald-500/20 shadow-xl shadow-emerald-500/5 bg-gradient-to-br from-emerald-500/5 via-teal-500/5 to-transparent w-full sm:max-w-md"
                 >
                     <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
                         <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7" />
@@ -245,27 +204,7 @@ const Dashboard = () => {
                         <h4 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tighter">₹{totalSpent.toLocaleString()}</h4>
                     </div>
                 </motion.div>
-
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] flex items-center gap-4 sm:gap-5 border-amber-500/10 sm:col-span-2 md:col-span-1"
-                >
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
-                        {getSyncIcon()}
-                    </div>
-                    <div>
-                        <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-slate-400">Cloud Sync</p>
-                        <h4 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
-                            {syncStatus === 'synced' ? 'Protected' : syncStatus}
-                        </h4>
-                    </div>
-                </motion.div>
             </section>
-
-            {/* Analytics Section */}
-            <Analytics />
 
             {/* Garage Header */}
             <section className="relative">

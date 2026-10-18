@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useFuel } from '../context/FuelContext';
 import { useNotification } from '../context/NotificationContext';
-import { formatDate } from '../utils/calculations';
+import { formatDate, getProcessedFuelEntries } from '../utils/calculations';
 import ConfirmDialog from './ConfirmDialog';
-import { Download, Receipt, Trash2 } from 'lucide-react';
+import { Download, Receipt, Trash2, Zap, Fuel, AlertCircle } from 'lucide-react';
 import DocumentViewerModal from './DocumentViewerModal';
 
 const HistoryTable = ({ vehicleId, onEdit }) => {
@@ -21,14 +21,26 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
         }
     };
 
+    if (!entries || entries.length === 0) {
+        return (
+            <div className="text-center p-8 bg-slate-800 rounded-xl border border-slate-700">
+                <p className="text-slate-400">No fuel entries found. Add one to see history!</p>
+            </div>
+        );
+    }
+
+    // Process all entries with smart stacking engine
+    const entriesWithMileage = getProcessedFuelEntries(entries);
+
     const handleExport = () => {
         try {
             const headers = [
                 "Date",
+                "Entry Type",
                 "Odometer (km)",
-                "Trip Distance (km)",
+                "Trip Distance",
                 "Fuel Filled (L)",
-                "Efficiency (km/L)",
+                "Mileage / Efficiency",
                 "Price per Liter (INR)",
                 "Total Cost (INR)",
                 "Payment Mode"
@@ -36,10 +48,13 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
             
             const rows = entriesWithMileage.map(entry => [
                 formatDate(entry.date),
+                entry.entryType === 'partial' ? 'Partial Fill (Stacked)' : 'Full Tank',
                 entry.odometer,
                 entry.tripDistance,
                 entry.liters,
-                entry.efficiency,
+                entry.status === 'partial_stacked'
+                    ? 'Stacked (Pending Full Tank)'
+                    : (entry.efficiency || '--'),
                 entry.price,
                 entry.totalCost,
                 entry.paymentMode || 'Cash'
@@ -71,32 +86,6 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
         }
     };
 
-    if (!entries || entries.length === 0) {
-        return (
-            <div className="text-center p-8 bg-slate-800 rounded-xl border border-slate-700">
-                <p className="text-slate-400">No fuel entries found. Add one to see history!</p>
-            </div>
-        );
-    }
-
-    // Prepare entries with calculated mileage
-    const sortedChronological = [...entries].sort((a, b) => new Date(a.date) - new Date(b.date));
-    const entriesWithMileage = entries.map(entry => {
-        const currentIdx = sortedChronological.findIndex(e => e.id === entry.id);
-        const prevEntry = currentIdx > 0 ? sortedChronological[currentIdx - 1] : null;
-
-        let efficiency = "--";
-        let tripDistance = "--";
-        if (prevEntry) {
-            const distance = entry.odometer - prevEntry.odometer;
-            tripDistance = distance + " km";
-            if (entry.liters > 0) {
-                efficiency = (distance / entry.liters).toFixed(2) + " km/L";
-            }
-        }
-        return { ...entry, efficiency, tripDistance };
-    });
-
     return (
         <>
             <div className="space-y-4">
@@ -115,31 +104,66 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
                     <table className="w-full text-left text-sm text-slate-400">
                         <thead className="bg-slate-700/50 text-xs uppercase font-medium text-slate-300">
                             <tr>
-                                <th className="px-6 py-4">Date</th>
-                                <th className="px-6 py-4">Odometer</th>
-                                <th className="px-6 py-4">Trip</th>
-                                <th className="px-6 py-4">Fuel</th>
-                                <th className="px-6 py-4">Efficiency</th>
-                                <th className="px-6 py-4">Price/L</th>
-                                <th className="px-6 py-4">Total</th>
-                                <th className="px-6 py-4">Mode</th>
-                                <th className="px-6 py-4 text-center">Receipt</th>
-                                <th className="px-6 py-4 text-right">Actions</th>
+                                <th className="px-5 py-4">Date</th>
+                                <th className="px-4 py-4">Type</th>
+                                <th className="px-5 py-4">Odometer</th>
+                                <th className="px-4 py-4">Trip</th>
+                                <th className="px-4 py-4">Fuel</th>
+                                <th className="px-5 py-4">Efficiency</th>
+                                <th className="px-4 py-4">Price/L</th>
+                                <th className="px-5 py-4">Total</th>
+                                <th className="px-4 py-4">Mode</th>
+                                <th className="px-4 py-4 text-center">Receipt</th>
+                                <th className="px-5 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-700">
                             {entriesWithMileage.map((entry) => (
                                 <tr key={entry.id} className="hover:bg-slate-700/30 transition-colors border-b border-slate-700 last:border-0">
-                                    <td className="px-6 py-4 font-medium text-white">
+                                    <td className="px-5 py-4 font-medium text-white whitespace-nowrap">
                                         {formatDate(entry.date)}
                                     </td>
-                                    <td className="px-6 py-4">{entry.odometer} km</td>
-                                    <td className="px-6 py-4 text-indigo-400 font-medium">{entry.tripDistance}</td>
-                                    <td className="px-6 py-4 text-slate-300">{entry.liters} L</td>
-                                    <td className="px-6 py-4 font-bold text-cyan-400">{entry.efficiency}</td>
-                                    <td className="px-6 py-4">₹{entry.price}</td>
-                                    <td className="px-6 py-4 font-bold text-emerald-400">₹{entry.totalCost}</td>
-                                    <td className="px-6 py-4">
+
+                                    {/* Entry Type Badge */}
+                                    <td className="px-4 py-4 whitespace-nowrap">
+                                        {entry.entryType === 'partial' ? (
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                                                <Zap className="w-3 h-3" /> Partial
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                                                <Fuel className="w-3 h-3" /> Full Tank
+                                            </span>
+                                        )}
+                                    </td>
+
+                                    <td className="px-5 py-4 whitespace-nowrap">{entry.odometer} km</td>
+                                    <td className="px-4 py-4 text-indigo-400 font-medium whitespace-nowrap">{entry.tripDistance}</td>
+                                    <td className="px-4 py-4 text-slate-300 whitespace-nowrap">{entry.liters} L</td>
+
+                                    {/* Efficiency / Mileage Column */}
+                                    <td className="px-5 py-4 whitespace-nowrap">
+                                        {entry.status === 'partial_stacked' ? (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20" title="Fuel and distance are stacked into buffer until next full tank">
+                                                <Zap className="w-3 h-3" /> Stacked
+                                            </span>
+                                        ) : entry.status === 'confirmed_stacked' ? (
+                                            <div className="flex flex-col">
+                                                <span className="font-black text-cyan-400 tracking-tight">{entry.efficiency}</span>
+                                                <span className="text-[9px] text-amber-400 font-bold">
+                                                    +{entry.stackedLitersIncluded}L stacked
+                                                </span>
+                                            </div>
+                                        ) : entry.status === 'confirmed' ? (
+                                            <span className="font-black text-cyan-400 tracking-tight">{entry.efficiency}</span>
+                                        ) : (
+                                            <span className="text-slate-500 text-xs font-semibold">Baseline Ref.</span>
+                                        )}
+                                    </td>
+
+                                    <td className="px-4 py-4 whitespace-nowrap">₹{entry.price}</td>
+                                    <td className="px-5 py-4 font-bold text-emerald-400 whitespace-nowrap">₹{entry.totalCost}</td>
+                                    <td className="px-4 py-4 whitespace-nowrap">
                                         <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase ${entry.paymentMode === 'Online'
                                             ? 'bg-blue-900/40 text-blue-400 border border-blue-800/50'
                                             : 'bg-amber-900/40 text-amber-400 border border-amber-800/50'
@@ -147,7 +171,7 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
                                             {entry.paymentMode || 'Cash'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-center">
+                                    <td className="px-4 py-4 text-center whitespace-nowrap">
                                         {entry.receiptUrl ? (
                                             <button
                                                 type="button"
@@ -162,16 +186,16 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
                                             <span className="text-slate-600 text-xs">-</span>
                                         )}
                                     </td>
-                                    <td className="px-6 py-4 text-right flex justify-end gap-2">
+                                    <td className="px-5 py-4 text-right flex justify-end gap-2 whitespace-nowrap">
                                         <button
                                             onClick={() => onEdit(entry)}
-                                            className="text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/30 px-3 py-1 rounded transition-colors"
+                                            className="text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/30 px-3 py-1 rounded transition-colors text-xs font-bold"
                                         >
                                             Edit
                                         </button>
                                         <button
                                             onClick={() => setDeleteConfirm(entry)}
-                                            className="text-rose-400 hover:text-rose-300 hover:bg-rose-900/30 px-3 py-1 rounded transition-colors"
+                                            className="text-rose-400 hover:text-rose-300 hover:bg-rose-900/30 px-3 py-1 rounded transition-colors text-xs font-bold"
                                         >
                                             Delete
                                         </button>
@@ -192,12 +216,24 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
                         <div key={entry.id} className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg flex flex-col gap-3">
                             <div className="flex justify-between items-start">
                                 <div className="flex flex-col">
-                                    <span className="text-white font-bold text-lg">{formatDate(entry.date)}</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-white font-bold text-lg">{formatDate(entry.date)}</span>
+                                        {entry.entryType === 'partial' ? (
+                                            <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                                                <Zap className="w-2.5 h-2.5" /> Partial
+                                            </span>
+                                        ) : (
+                                            <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                                                <Fuel className="w-2.5 h-2.5" /> Full
+                                            </span>
+                                        )}
+                                    </div>
                                     <span className="text-slate-400 text-sm">{entry.odometer} km</span>
                                 </div>
                                 <span className="text-emerald-400 font-bold text-xl">₹{entry.totalCost}</span>
                             </div>
-                            <div className="flex justify-between items-center bg-slate-700/30 px-3 py-1 rounded-lg border border-slate-700/50">
+
+                            <div className="flex justify-between items-center bg-slate-700/30 px-3 py-1.5 rounded-lg border border-slate-700/50">
                                 <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Payment Mode</span>
                                 <span className={`text-[10px] font-bold uppercase ${entry.paymentMode === 'Online' ? 'text-blue-400' : 'text-amber-400'
                                     }`}>
@@ -216,7 +252,20 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-slate-500 text-xs uppercase font-bold tracking-wider mb-0.5">Efficiency</span>
-                                    <span className="text-cyan-400 font-bold">{entry.efficiency}</span>
+                                    {entry.status === 'partial_stacked' ? (
+                                        <span className="text-amber-400 font-black text-sm flex items-center gap-1">
+                                            <Zap className="w-3.5 h-3.5" /> Stacked
+                                        </span>
+                                    ) : entry.status === 'confirmed_stacked' ? (
+                                        <div className="flex flex-col">
+                                            <span className="text-cyan-400 font-black text-sm">{entry.efficiency}</span>
+                                            <span className="text-[10px] text-amber-400 font-bold">+{entry.stackedLitersIncluded}L stacked</span>
+                                        </div>
+                                    ) : entry.status === 'confirmed' ? (
+                                        <span className="text-cyan-400 font-black text-sm">{entry.efficiency}</span>
+                                    ) : (
+                                        <span className="text-slate-500 font-bold text-xs">Baseline Ref.</span>
+                                    )}
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-slate-500 text-xs uppercase font-bold tracking-wider mb-0.5">Price / Total</span>

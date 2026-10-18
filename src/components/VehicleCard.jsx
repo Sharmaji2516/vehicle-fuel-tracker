@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { calculateMileage, calculateAverageMileage, calculateTotalSpent, calculateAllMileages, formatDate, calculateDaysSinceLastService, calculateFuelCost, calculateServiceCost, calculateExpiryStatus, getExpiryWarning } from '../utils/calculations';
+import { calculateMileage, calculateAverageMileage, calculateTotalSpent, calculateAllMileages, formatDate, calculateDaysSinceLastService, calculateFuelCost, calculateServiceCost, calculateExpiryStatus, getExpiryWarning, getVehicleStackInfo } from '../utils/calculations';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Droplet, Wrench, IndianRupee, Calendar, TrendingUp, Info, Shield, FileText, ChevronDown, ChevronUp, AlertTriangle, Edit3, Eye, Trash2 } from 'lucide-react';
+import { Droplet, Wrench, IndianRupee, Calendar, TrendingUp, Info, Shield, FileText, ChevronDown, ChevronUp, AlertTriangle, Edit3, Eye, Trash2, Zap } from 'lucide-react';
 import { useFuel } from '../context/FuelContext';
 import { useNotification } from '../context/NotificationContext';
 import EditVehicleDetailsModal from './EditVehicleDetailsModal';
@@ -21,6 +21,7 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
     const serviceCost = calculateServiceCost(serviceEntries);
     const recentMileages = calculateAllMileages(entries).slice(0, 3);
     const daysSinceService = calculateDaysSinceLastService(serviceEntries);
+    const stackInfo = getVehicleStackInfo(entries);
 
     const pucWarning = getExpiryWarning('PUC', vehicle.pucExpiryDate);
     const insuranceWarning = getExpiryWarning('Insurance', vehicle.insuranceExpiryDate);
@@ -107,6 +108,24 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
                     </div>
                 </div>
             </div>
+
+            {/* Active Stacked Fuel Banner (When Partial Fills Exist) */}
+            {stackInfo.stackedLiters > 0 && (
+                <div className="mb-4 p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-500/30 shadow-sm relative z-10">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                            <Zap className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                            Active Stack Buffer
+                        </span>
+                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30">
+                            Pending Full Tank
+                        </span>
+                    </div>
+                    <p className="text-xs sm:text-sm font-black text-slate-800 dark:text-white">
+                        ⚡ {stackInfo.stackedLiters} L Stacked {stackInfo.distanceSinceLastFull > 0 ? `| ${stackInfo.distanceSinceLastFull} km Since Last Full Tank` : `(${stackInfo.pendingCount} partial top-up)`}
+                    </p>
+                </div>
+            )}
 
             {/* Expandable Details Toggle */}
             <button
