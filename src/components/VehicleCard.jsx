@@ -29,7 +29,7 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             whileHover={{ y: -5 }}
-            className={`glass-card p-6 rounded-[2rem] relative overflow-hidden group cursor-pointer border border-white/20 dark:border-white/10 transition-all duration-500 ${isSelected ? 'ring-2 ring-indigo-500 shadow-2xl shadow-indigo-500/20' : ''}`}
+            className={`glass-card p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] relative overflow-hidden group cursor-pointer border border-white/20 dark:border-white/10 transition-all duration-500 ${isSelected ? 'ring-2 ring-indigo-500 shadow-2xl shadow-indigo-500/20' : ''}`}
             onClick={(e) => onViewHistory(e, 'fuel')}
         >
             {/* Ambient Background Accents */}
@@ -59,9 +59,9 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
             </div>
 
             {/* Header */}
-            <div className="relative z-10 flex justify-between items-start mb-6">
+            <div className="relative z-10 flex justify-between items-start mb-5 sm:mb-6">
                 <div>
-                    <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                         {vehicle.name}
                     </h3>
                     <div className="flex items-center gap-2 mt-1.5">
@@ -85,20 +85,20 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-4 mb-6 relative z-10">
-                <div className="bg-gradient-to-br from-indigo-500/5 to-purple-500/5 dark:from-indigo-500/10 dark:to-purple-500/10 p-4 rounded-[1.5rem] border border-indigo-500/10 dark:border-indigo-500/20 group/stat">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 mb-5 sm:mb-6 relative z-10">
+                <div className="bg-gradient-to-br from-indigo-500/5 to-purple-500/5 dark:from-indigo-500/10 dark:to-purple-500/10 p-3 sm:p-4 rounded-xl sm:rounded-[1.5rem] border border-indigo-500/10 dark:border-indigo-500/20 group/stat">
                     <p className="text-indigo-600 dark:text-indigo-300 text-[10px] font-black uppercase tracking-widest mb-1 flex items-center gap-1.5">
                         <TrendingUp className="w-3 h-3" /> Last Eff.
                     </p>
                     <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{lastMileage}</span>
+                        <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{lastMileage}</span>
                         <span className="text-xs font-bold text-slate-400 dark:text-slate-500">km/l</span>
                     </div>
                 </div>
-                <div className="bg-slate-50/50 dark:bg-slate-800/30 p-4 rounded-[1.5rem] border border-slate-200/50 dark:border-white/5">
+                <div className="bg-slate-50/50 dark:bg-slate-800/30 p-3 sm:p-4 rounded-xl sm:rounded-[1.5rem] border border-slate-200/50 dark:border-white/5">
                     <p className="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Avg Eff.</p>
                     <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black text-slate-700 dark:text-slate-200 tracking-tighter">{avgMileage}</span>
+                        <span className="text-2xl sm:text-3xl font-black text-slate-700 dark:text-slate-200 tracking-tighter">{avgMileage}</span>
                         <span className="text-xs font-bold text-slate-400 dark:text-slate-500">km/l</span>
                     </div>
                 </div>

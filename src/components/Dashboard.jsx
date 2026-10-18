@@ -216,18 +216,18 @@ const Dashboard = () => {
             <MaintenanceAlerts />
 
             {/* Garage Overview Summary */}
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="glass-card p-6 rounded-[2rem] flex items-center gap-5 border-indigo-500/10"
+                    className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] flex items-center gap-4 sm:gap-5 border-indigo-500/10"
                 >
-                    <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
-                        <Car className="w-7 h-7" />
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 shrink-0">
+                        <Car className="w-6 h-6 sm:w-7 sm:h-7" />
                     </div>
                     <div>
-                        <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Total Garage</p>
-                        <h4 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{totalVehicles} <span className="text-sm font-bold text-slate-400 uppercase">Vehicles</span></h4>
+                        <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-slate-400">Total Garage</p>
+                        <h4 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{totalVehicles} <span className="text-xs sm:text-sm font-bold text-slate-400 uppercase">Vehicles</span></h4>
                     </div>
                 </motion.div>
 
@@ -235,14 +235,14 @@ const Dashboard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="glass-card p-6 rounded-[2rem] flex items-center gap-5 border-emerald-500/10"
+                    className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] flex items-center gap-4 sm:gap-5 border-emerald-500/10"
                 >
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                        <TrendingUp className="w-7 h-7" />
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+                        <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7" />
                     </div>
                     <div>
-                        <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Total Investment</p>
-                        <h4 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">₹{totalSpent.toLocaleString()}</h4>
+                        <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-slate-400">Total Investment</p>
+                        <h4 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tighter">₹{totalSpent.toLocaleString()}</h4>
                     </div>
                 </motion.div>
 
@@ -250,14 +250,14 @@ const Dashboard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="glass-card p-6 rounded-[2rem] flex items-center gap-5 border-amber-500/10"
+                    className="glass-card p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] flex items-center gap-4 sm:gap-5 border-amber-500/10 sm:col-span-2 md:col-span-1"
                 >
-                    <div className="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
                         {getSyncIcon()}
                     </div>
                     <div>
-                        <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Cloud Sync</p>
-                        <h4 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+                        <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-slate-400">Cloud Sync</p>
+                        <h4 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
                             {syncStatus === 'synced' ? 'Protected' : syncStatus}
                         </h4>
                     </div>
@@ -377,21 +377,21 @@ const Dashboard = () => {
                         exit={{ opacity: 0, y: 50 }}
                         className="relative z-20"
                     >
-                        <div className="glass-card rounded-[2.5rem] p-8 md:p-12 border-indigo-500/20 shadow-2xl">
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12 border-b border-slate-200 dark:border-white/5 pb-10">
-                                <div className="space-y-2">
-                                    <h3 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter uppercase">
+                        <div className="glass-card rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-8 md:p-12 border-indigo-500/20 shadow-2xl">
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8 mb-8 sm:mb-12 border-b border-slate-200 dark:border-white/5 pb-6 sm:pb-10">
+                                <div className="space-y-1 sm:space-y-2">
+                                    <h3 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tighter uppercase">
                                         {vehicles.find(v => v.id === viewHistoryId)?.name} 
-                                        <span className="text-indigo-500 ml-3">Logs</span>
+                                        <span className="text-indigo-500 ml-2 sm:ml-3">Logs</span>
                                     </h3>
-                                    <p className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
+                                    <p className="text-xs sm:text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider sm:tracking-[0.2em]">
                                         Detailed records for fuel and maintenance
                                     </p>
                                 </div>
-                                <div className="flex items-center gap-3 bg-slate-100 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
+                                <div className="flex items-center gap-2 sm:gap-3 bg-slate-100 dark:bg-slate-900/80 p-1 sm:p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner w-full sm:w-auto justify-between sm:justify-start">
                                     <button
                                         onClick={() => setHistoryType('fuel')}
-                                        className={`px-8 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${historyType === 'fuel'
+                                        className={`flex-1 sm:flex-initial px-4 sm:px-8 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider sm:tracking-widest transition-all ${historyType === 'fuel'
                                             ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20'
                                             : 'text-slate-500 dark:text-slate-400 hover:text-indigo-500'
                                             }`}
@@ -401,19 +401,19 @@ const Dashboard = () => {
 
                                     <button
                                         onClick={() => setHistoryType('service')}
-                                        className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${historyType === 'service'
+                                        className={`flex-1 sm:flex-initial px-4 sm:px-8 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider sm:tracking-widest transition-all ${historyType === 'service'
                                             ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-500/20'
                                             : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500'
                                             }`}
                                     >
                                         Services
                                     </button>
-                                    <div className="w-px h-6 bg-slate-300 dark:bg-slate-700 mx-2" />
+                                    <div className="w-px h-6 bg-slate-300 dark:bg-slate-700 mx-1 sm:mx-2" />
                                     <button
                                         onClick={() => setViewHistoryId(null)}
-                                        className="p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
+                                        className="p-2.5 sm:p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all shrink-0"
                                     >
-                                        <X className="w-5 h-5" />
+                                        <X className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </button>
                                 </div>
                             </div>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ZoomIn, ZoomOut, RotateCw, Download, ExternalLink, FileText, Image as ImageIcon } from 'lucide-react';
+import { X, ZoomIn, ZoomOut, RotateCw, Download, ExternalLink, FileText, Image as ImageIcon, Trash2 } from 'lucide-react';
 
-const DocumentViewerModal = ({ isOpen, onClose, documentUrl, title = 'Document Viewer', subtitle = '' }) => {
+const DocumentViewerModal = ({ isOpen, onClose, documentUrl, title = 'Document Viewer', subtitle = '', onDelete = null }) => {
     const [scale, setScale] = useState(1);
     const [rotation, setRotation] = useState(0);
 
@@ -121,6 +121,22 @@ const DocumentViewerModal = ({ isOpen, onClose, documentUrl, title = 'Document V
                                         <RotateCw className="w-4 h-4" />
                                     </button>
                                 </div>
+                            )}
+
+                            {onDelete && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (window.confirm('Delete this photo / document?')) {
+                                            onDelete();
+                                            onClose();
+                                        }
+                                    }}
+                                    title="Delete Document"
+                                    className="p-2 text-rose-400 hover:text-white bg-rose-500/10 hover:bg-rose-500 border border-rose-500/20 rounded-xl transition-all"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
                             )}
 
                             <button
