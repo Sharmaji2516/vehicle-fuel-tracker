@@ -8,7 +8,7 @@ import HistoryTable from './HistoryTable';
 import ServiceHistoryTable from './ServiceHistoryTable';
 import AddServiceForm from './AddServiceForm';
 import MaintenanceAlerts from './MaintenanceAlerts';
-import { Plus, Car, TrendingUp, Download } from 'lucide-react';
+import { Plus, Car, TrendingUp, Download, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { calculateTotalSpent, getProcessedFuelEntries } from '../utils/calculations';
 import { useNotification } from '../context/NotificationContext';
