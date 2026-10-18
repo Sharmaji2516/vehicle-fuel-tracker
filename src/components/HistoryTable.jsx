@@ -1,0 +1,279 @@
+import React, { useState } from 'react';
+import { useFuel } from '../context/FuelContext';
+import { useNotification } from '../context/NotificationContext';
+import { formatDate } from '../utils/calculations';
+import ConfirmDialog from './ConfirmDialog';
+import { Download, Receipt } from 'lucide-react';
+import DocumentViewerModal from './DocumentViewerModal';
+
+const HistoryTable = ({ vehicleId, onEdit }) => {
+    const { getVehicleEntries, deleteEntry, vehicles } = useFuel();
+    const { showNotification } = useNotification();
+    const entries = getVehicleEntries(vehicleId);
+    const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [viewingReceipt, setViewingReceipt] = useState(null);
+
+    const handleDelete = async () => {
+        if (deleteConfirm) {
+            await deleteEntry(deleteConfirm.id);
+            showNotification('Fuel entry deleted successfully!', 'success');
+            setDeleteConfirm(null);
+        }
+    };
+
+    const handleExport = () => {
+        try {
+            const headers = [
+                "Date",
+                "Odometer (km)",
+                "Trip Distance (km)",
+                "Fuel Filled (L)",
+                "Efficiency (km/L)",
+                "Price per Liter (INR)",
+                "Total Cost (INR)",
+                "Payment Mode"
+            ];
+            
+            const rows = entriesWithMileage.map(entry => [
+                formatDate(entry.date),
+                entry.odometer,
+                entry.tripDistance,
+                entry.liters,
+                entry.efficiency,
+                entry.price,
+                entry.totalCost,
+                entry.paymentMode || 'Cash'
+            ]);
+
+            const csvContent = [
+                headers.join(","),
+                ...rows.map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(","))
+            ].join("\n");
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            
+            const vehicleName = vehicles?.find(v => v.id === vehicleId)?.name || 'vehicle';
+            const fileName = `${vehicleName.toLowerCase().replace(/\s+/g, '_')}_fuel_logs.csv`;
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", fileName);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('Logs exported successfully!', 'success');
+        } catch (error) {
+            console.error('Export failed:', error);
+            showNotification('Failed to export logs', 'error');
+        }
+    };
+
+    if (!entries || entries.length === 0) {
+        return (
+            <div className="text-center p-8 bg-slate-800 rounded-xl border border-slate-700">
+                <p className="text-slate-400">No fuel entries found. Add one to see history!</p>
+            </div>
+        );
+    }
+
+    // Prepare entries with calculated mileage
+    const sortedChronological = [...entries].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const entriesWithMileage = entries.map(entry => {
+        const currentIdx = sortedChronological.findIndex(e => e.id === entry.id);
+        const prevEntry = currentIdx > 0 ? sortedChronological[currentIdx - 1] : null;
+
+        let efficiency = "--";
+        let tripDistance = "--";
+        if (prevEntry) {
+            const distance = entry.odometer - prevEntry.odometer;
+            tripDistance = distance + " km";
+            if (entry.liters > 0) {
+                efficiency = (distance / entry.liters).toFixed(2) + " km/L";
+            }
+        }
+        return { ...entry, efficiency, tripDistance };
+    });
+
+    return (
+        <>
+            <div className="space-y-4">
+                <div className="flex justify-end">
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-wider"
+                    >
+                        <Download className="w-4.5 h-4.5" />
+                        Export to Excel
+                    </button>
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto bg-slate-800 rounded-xl border border-slate-700 shadow-xl">
+                    <table className="w-full text-left text-sm text-slate-400">
+                        <thead className="bg-slate-700/50 text-xs uppercase font-medium text-slate-300">
+                            <tr>
+                                <th className="px-6 py-4">Date</th>
+                                <th className="px-6 py-4">Odometer</th>
+                                <th className="px-6 py-4">Trip</th>
+                                <th className="px-6 py-4">Fuel</th>
+                                <th className="px-6 py-4">Efficiency</th>
+                                <th className="px-6 py-4">Price/L</th>
+                                <th className="px-6 py-4">Total</th>
+                                <th className="px-6 py-4">Mode</th>
+                                <th className="px-6 py-4 text-center">Receipt</th>
+                                <th className="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-700">
+                            {entriesWithMileage.map((entry) => (
+                                <tr key={entry.id} className="hover:bg-slate-700/30 transition-colors border-b border-slate-700 last:border-0">
+                                    <td className="px-6 py-4 font-medium text-white">
+                                        {formatDate(entry.date)}
+                                    </td>
+                                    <td className="px-6 py-4">{entry.odometer} km</td>
+                                    <td className="px-6 py-4 text-indigo-400 font-medium">{entry.tripDistance}</td>
+                                    <td className="px-6 py-4 text-slate-300">{entry.liters} L</td>
+                                    <td className="px-6 py-4 font-bold text-cyan-400">{entry.efficiency}</td>
+                                    <td className="px-6 py-4">₹{entry.price}</td>
+                                    <td className="px-6 py-4 font-bold text-emerald-400">₹{entry.totalCost}</td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase ${entry.paymentMode === 'Online'
+                                            ? 'bg-blue-900/40 text-blue-400 border border-blue-800/50'
+                                            : 'bg-amber-900/40 text-amber-400 border border-amber-800/50'
+                                            }`}>
+                                            {entry.paymentMode || 'Cash'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        {entry.receiptUrl ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => setViewingReceipt(entry)}
+                                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/25 text-indigo-400 border border-indigo-500/20 text-xs font-bold transition-all shadow-sm hover:scale-105 active:scale-95"
+                                                title="View Fuel Receipt"
+                                            >
+                                                <Receipt className="w-3.5 h-3.5" />
+                                                <span>Bill</span>
+                                            </button>
+                                        ) : (
+                                            <span className="text-slate-600 text-xs">-</span>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-4 text-right flex justify-end gap-2">
+                                        <button
+                                            onClick={() => onEdit(entry)}
+                                            className="text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/30 px-3 py-1 rounded transition-colors"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => setDeleteConfirm(entry)}
+                                            className="text-rose-400 hover:text-rose-300 hover:bg-rose-900/30 px-3 py-1 rounded transition-colors"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-4">
+                    <div className="flex justify-between items-center mb-2 px-1">
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Mobile View</span>
+                        <span className="text-[10px] text-slate-600 bg-slate-800/50 px-2 py-0.5 rounded border border-slate-700/50">{entries.length} Entries</span>
+                    </div>
+                    {entriesWithMileage.map((entry) => (
+                        <div key={entry.id} className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg flex flex-col gap-3">
+                            <div className="flex justify-between items-start">
+                                <div className="flex flex-col">
+                                    <span className="text-white font-bold text-lg">{formatDate(entry.date)}</span>
+                                    <span className="text-slate-400 text-sm">{entry.odometer} km</span>
+                                </div>
+                                <span className="text-emerald-400 font-bold text-xl">₹{entry.totalCost}</span>
+                            </div>
+                            <div className="flex justify-between items-center bg-slate-700/30 px-3 py-1 rounded-lg border border-slate-700/50">
+                                <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Payment Mode</span>
+                                <span className={`text-[10px] font-bold uppercase ${entry.paymentMode === 'Online' ? 'text-blue-400' : 'text-amber-400'
+                                    }`}>
+                                    {entry.paymentMode === 'Online' ? '💳 Online' : '💵 Cash'}
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 text-base text-slate-400 border-t border-slate-700/50 pt-3">
+                                <div className="flex flex-col">
+                                    <span className="text-slate-500 text-xs uppercase font-bold tracking-wider mb-0.5">Trip Distance</span>
+                                    <span className="text-white font-medium">{entry.tripDistance}</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-slate-500 text-xs uppercase font-bold tracking-wider mb-0.5">Fuel Filled</span>
+                                    <span className="text-white font-medium">{entry.liters} L</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-slate-500 text-xs uppercase font-bold tracking-wider mb-0.5">Efficiency</span>
+                                    <span className="text-cyan-400 font-bold">{entry.efficiency}</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-slate-500 text-xs uppercase font-bold tracking-wider mb-0.5">Price / Total</span>
+                                    <span className="text-slate-200 font-medium">₹{entry.price} / ₹{entry.totalCost}</span>
+                                </div>
+                            </div>
+
+                            {entry.receiptUrl && (
+                                <button
+                                    type="button"
+                                    onClick={() => setViewingReceipt(entry)}
+                                    className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 text-xs font-bold transition-colors"
+                                >
+                                    <Receipt className="w-4 h-4" />
+                                    View Fuel Bill / Receipt
+                                </button>
+                            )}
+
+                            <div className="flex justify-end gap-3 mt-2">
+                                <button
+                                    onClick={() => onEdit(entry)}
+                                    className="flex-1 bg-slate-700 hover:bg-slate-600 text-indigo-300 py-2 rounded-lg text-sm font-medium transition-colors"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => setDeleteConfirm(entry)}
+                                    className="flex-1 bg-slate-700 hover:bg-slate-600 text-rose-300 py-2 rounded-lg text-sm font-medium transition-colors"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <ConfirmDialog
+                isOpen={!!deleteConfirm}
+                title="Delete Fuel Entry?"
+                message={`Are you sure you want to delete the fuel entry from ${deleteConfirm ? formatDate(deleteConfirm.date) : ''}? This action cannot be undone.`}
+                onConfirm={handleDelete}
+                onCancel={() => setDeleteConfirm(null)}
+                confirmText="Delete"
+                cancelText="Cancel"
+            />
+
+            {/* Receipt Document Viewer Modal */}
+            <DocumentViewerModal
+                isOpen={!!viewingReceipt}
+                onClose={() => setViewingReceipt(null)}
+                documentUrl={viewingReceipt?.receiptUrl}
+                title={`Fuel Receipt • ${viewingReceipt ? formatDate(viewingReceipt.date) : ''}`}
+                subtitle={viewingReceipt ? `₹${viewingReceipt.totalCost} • ${viewingReceipt.liters} Liters @ ₹${viewingReceipt.price}/L` : ''}
+            />
+        </>
+    );
+};
+
+export default HistoryTable;
