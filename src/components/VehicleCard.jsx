@@ -110,20 +110,26 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
             </div>
 
             {/* Active Stacked Fuel Banner (When Partial Fills Exist) */}
-            {stackInfo.stackedLiters > 0 && (
-                <div className="mb-4 p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-500/30 shadow-sm relative z-10">
-                    <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+            {stackInfo.pendingCount > 0 && (
+                <div className="mb-4 p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/40 shadow-md shadow-amber-500/5 relative z-10">
+                    <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-amber-500 dark:text-amber-400 flex items-center gap-1.5">
                             <Zap className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
                             Active Stack Buffer
                         </span>
-                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30">
-                            Pending Full Tank
+                        <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-500 dark:text-amber-300 border border-amber-500/30">
+                            {stackInfo.pendingCount}x Fills Pending
                         </span>
                     </div>
-                    <p className="text-xs sm:text-sm font-black text-slate-800 dark:text-white">
-                        ⚡ {stackInfo.stackedLiters} L Stacked {stackInfo.distanceSinceLastFull > 0 ? `| ${stackInfo.distanceSinceLastFull} km Since Last Full Tank` : `(${stackInfo.pendingCount} partial top-up)`}
-                    </p>
+                    <div className="space-y-0.5">
+                        <p className="text-xs sm:text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                            ⚡ {stackInfo.pendingCount}x Partial Fill{stackInfo.pendingCount > 1 ? 's' : ''} Stacked ({stackInfo.stackedLiters} L)
+                        </p>
+                        <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                            {stackInfo.distanceSinceLastFull > 0 ? `${stackInfo.distanceSinceLastFull} km since last full tank • ` : ''}
+                            Full Tank refill will calculate exact cycle mileage
+                        </p>
+                    </div>
                 </div>
             )}
 

@@ -1,35 +1,32 @@
 import React, { useState } from 'react';
 import { useFuel } from '../context/FuelContext';
 import { useNotification } from '../context/NotificationContext';
-import { formatDate, getProcessedFuelEntries } from '../utils/calculations';
+import { formatDate, getProcessedFuelEntries, getVehicleStackInfo } from '../utils/calculations';
 import ConfirmDialog from './ConfirmDialog';
-import { Download, Receipt, Trash2, Zap, Fuel, AlertCircle } from 'lucide-react';
+import { Download, Receipt, Trash2, Zap, Fuel, AlertCircle, Info } from 'lucide-react';
 import DocumentViewerModal from './DocumentViewerModal';
 
 const HistoryTable = ({ vehicleId, onEdit }) => {
     const { getVehicleEntries, deleteEntry, editEntry, vehicles } = useFuel();
     const { showNotification } = useNotification();
-    const entries = getVehicleEntries(vehicleId);
+    const entries = getVehicleEntries(vehicleId) || [];
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const [viewingReceipt, setViewingReceipt] = useState(null);
 
     const handleDelete = async () => {
-        if (deleteConfirm) {
-            await deleteEntry(deleteConfirm.id);
+        if (!deleteConfirm) return;
+        const entryToDelete = deleteConfirm;
+        setDeleteConfirm(null);
+        try {
+            await deleteEntry(entryToDelete.id);
             showNotification('Fuel entry deleted successfully!', 'success');
-            setDeleteConfirm(null);
+        } catch (error) {
+            console.error('Delete failed:', error);
+            showNotification('Failed to delete fuel entry', 'error');
         }
     };
 
-    if (!entries || entries.length === 0) {
-        return (
-            <div className="text-center p-8 bg-slate-800 rounded-xl border border-slate-700">
-                <p className="text-slate-400">No fuel entries found. Add one to see history!</p>
-            </div>
-        );
-    }
-
-    // Process all entries with smart stacking engine
+    const stackInfo = getVehicleStackInfo(entries);
     const entriesWithMileage = getProcessedFuelEntries(entries);
 
     const handleExport = () => {
@@ -89,20 +86,49 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
     return (
         <>
             <div className="space-y-4">
-                <div className="flex justify-end">
-                    <button
-                        onClick={handleExport}
-                        className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-wider"
-                    >
-                        <Download className="w-4.5 h-4.5" />
-                        Export to Excel
-                    </button>
-                </div>
+                {/* Active Stack Buffer Notice in Logs View */}
+                {stackInfo.pendingCount > 0 && (
+                    <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
+                                <Zap className="w-5 h-5 text-amber-400 animate-pulse" />
+                            </div>
+                            <div>
+                                <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-white flex items-center gap-2">
+                                    <span>Active Stack Buffer: {stackInfo.pendingCount}x Partial Fill{stackInfo.pendingCount > 1 ? 's' : ''} Stacked ({stackInfo.stackedLiters} L)</span>
+                                </h4>
+                                <p className="text-[11px] text-amber-400/90 font-medium">
+                                    {stackInfo.distanceSinceLastFull > 0 ? `${stackInfo.distanceSinceLastFull} km driven since last full tank. ` : ''}
+                                    All stacked fuel will be combined to calculate certified mileage on your next Full Tank.
+                                </p>
+                            </div>
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">
+                            Pending Full Tank
+                        </span>
+                    </div>
+                )}
 
-                {/* Desktop Table View */}
-                <div className="hidden md:block overflow-x-auto bg-slate-800 rounded-xl border border-slate-700 shadow-xl">
-                    <table className="w-full text-left text-sm text-slate-400">
-                        <thead className="bg-slate-700/50 text-xs uppercase font-medium text-slate-300">
+                {entries.length === 0 ? (
+                    <div className="text-center p-8 bg-slate-800 rounded-xl border border-slate-700">
+                        <p className="text-slate-400">No fuel entries found. Add one to see history!</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        <div className="flex justify-end">
+                            <button
+                                onClick={handleExport}
+                                className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-wider"
+                            >
+                                <Download className="w-4.5 h-4.5" />
+                                Export to Excel
+                            </button>
+                        </div>
+
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block overflow-x-auto bg-slate-800 rounded-xl border border-slate-700 shadow-xl">
+                            <table className="w-full text-left text-sm text-slate-400">
+                                <thead className="bg-slate-700/50 text-xs uppercase font-medium text-slate-300">
                             <tr>
                                 <th className="px-5 py-4">Date</th>
                                 <th className="px-4 py-4">Type</th>
@@ -316,6 +342,8 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
                         </div>
                     ))}
                 </div>
+                </div>
+                )}
             </div>
 
             <ConfirmDialog

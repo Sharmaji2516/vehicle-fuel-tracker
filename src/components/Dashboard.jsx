@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFuel } from '../context/FuelContext';
 import { useAuth } from '../context/AuthContext';
 import VehicleCard from './VehicleCard';
@@ -25,6 +25,12 @@ const Dashboard = () => {
     const [viewHistoryId, setViewHistoryId] = useState(null);
     const [historyType, setHistoryType] = useState('fuel'); // 'fuel' or 'service'
     const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
+
+    useEffect(() => {
+        if (viewHistoryId && !vehicles.some(v => v.id === viewHistoryId)) {
+            setViewHistoryId(null);
+        }
+    }, [vehicles, viewHistoryId]);
 
     const handleExportAll = () => {
         try {
@@ -320,7 +326,7 @@ const Dashboard = () => {
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8 mb-8 sm:mb-12 border-b border-slate-200 dark:border-white/5 pb-6 sm:pb-10">
                                 <div className="space-y-1 sm:space-y-2">
                                     <h3 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tighter uppercase">
-                                        {vehicles.find(v => v.id === viewHistoryId)?.name} 
+                                        {vehicles.find(v => v.id === viewHistoryId)?.name || 'Vehicle'} 
                                         <span className="text-indigo-500 ml-2 sm:ml-3">Logs</span>
                                     </h3>
                                     <p className="text-xs sm:text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider sm:tracking-[0.2em]">

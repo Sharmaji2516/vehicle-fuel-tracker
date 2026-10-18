@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useFuel } from '../context/FuelContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Gauge, Droplet, IndianRupee, CreditCard, Banknote, Check, Zap, Fuel, AlertCircle } from 'lucide-react';
+import { X, Calendar, Gauge, Droplet, IndianRupee, CreditCard, Banknote, Check, Zap, Fuel, AlertCircle, Info } from 'lucide-react';
+import { getVehicleStackInfo } from '../utils/calculations';
 import DocumentUploadInput from './DocumentUploadInput';
 
 const AddEntryForm = ({ vehicleId, onClose, initialData }) => {
     const { addEntry, editEntry, vehicles, getVehicleEntries } = useFuel();
     const vehicle = vehicles.find(v => v.id === vehicleId);
     const existingEntries = getVehicleEntries ? getVehicleEntries(vehicleId) : [];
+    const stackInfo = getVehicleStackInfo(existingEntries);
     // Get the most recent odometer for reference
     const latestOdometer = existingEntries.length > 0 ? Math.max(...existingEntries.map(e => Number(e.odometer) || 0)) : null;
 
@@ -212,17 +214,35 @@ const AddEntryForm = ({ vehicleId, onClose, initialData }) => {
                                 </button>
                             </div>
 
-                            {/* Informational Hint */}
-                            {formData.entryType === 'partial' ? (
-                                <p className="text-[11px] text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2 flex items-center gap-2">
-                                    <Zap className="w-3.5 h-3.5 shrink-0" />
-                                    <span>Liters & km will be stacked. Certified mileage will calculate on your next Full Tank.</span>
-                                </p>
-                            ) : (
-                                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2 flex items-center gap-2">
-                                    <Check className="w-3.5 h-3.5 shrink-0" />
-                                    <span>Calculates true mileage across all distance and fuel since the previous Full Tank.</span>
-                                </p>
+                            {/* Informational Hint & Active Stack Notice */}
+                            {stackInfo.pendingCount > 0 && (
+                                <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl text-amber-400 text-xs space-y-1">
+                                    <div className="flex items-center gap-1.5 font-black uppercase tracking-wider text-[10px]">
+                                        <Zap className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                                        <span>Current Buffer: {stackInfo.pendingCount}x Partial Fill{stackInfo.pendingCount > 1 ? 's' : ''} Stacked ({stackInfo.stackedLiters} L)</span>
+                                    </div>
+                                    <p className="text-[11px] text-slate-300">
+                                        {formData.entryType === 'full'
+                                            ? `✅ Selecting 'Full Tank': Previous ${stackInfo.stackedLiters} L + this refill will be combined to calculate your exact mileage.`
+                                            : `⚡ Selecting 'Partial': This fuel will be stacked into the buffer alongside the previous ${stackInfo.stackedLiters} L.`}
+                                    </p>
+                                </div>
+                            )}
+
+                            {stackInfo.pendingCount === 0 && (
+                                <>
+                                    {formData.entryType === 'partial' ? (
+                                        <p className="text-[11px] text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2 flex items-center gap-2">
+                                            <Zap className="w-3.5 h-3.5 shrink-0" />
+                                            <span>Liters & km will be stacked. Certified mileage will calculate on your next Full Tank.</span>
+                                        </p>
+                                    ) : (
+                                        <p className="text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2 flex items-center gap-2">
+                                            <Check className="w-3.5 h-3.5 shrink-0" />
+                                            <span>Calculates true mileage across all distance and fuel since the previous Full Tank.</span>
+                                        </p>
+                                    )}
+                                </>
                             )}
                         </div>
 

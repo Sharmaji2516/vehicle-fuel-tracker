@@ -14,10 +14,15 @@ const ServiceHistoryTable = ({ vehicleId, onEdit }) => {
     const [viewingInvoice, setViewingInvoice] = useState(null);
 
     const handleDelete = async () => {
-        if (deleteConfirm) {
-            await deleteServiceEntry(deleteConfirm.id);
+        if (!deleteConfirm) return;
+        const entryToDelete = deleteConfirm;
+        setDeleteConfirm(null);
+        try {
+            await deleteServiceEntry(entryToDelete.id);
             showNotification('Service entry deleted successfully!', 'success');
-            setDeleteConfirm(null);
+        } catch (error) {
+            console.error('Delete service error:', error);
+            showNotification('Failed to delete service entry', 'error');
         }
     };
 
@@ -31,7 +36,7 @@ const ServiceHistoryTable = ({ vehicleId, onEdit }) => {
                 "Payment Mode"
             ];
             
-            const rows = entries.map(entry => [
+            const rows = (entries || []).map(entry => [
                 formatDate(entry.date),
                 entry.odometer,
                 entry.serviceType,
@@ -65,17 +70,15 @@ const ServiceHistoryTable = ({ vehicleId, onEdit }) => {
         }
     };
 
-    if (!entries || entries.length === 0) {
-        return (
-            <div className="text-center p-8 bg-slate-800 rounded-xl border border-slate-700">
-                <p className="text-slate-400">No service entries found. Click "Add Service" to record maintenance!</p>
-            </div>
-        );
-    }
-
     return (
         <>
             <div className="space-y-4">
+                {(!entries || entries.length === 0) ? (
+                    <div className="text-center p-8 bg-slate-800 rounded-xl border border-slate-700">
+                        <p className="text-slate-400">No service entries found. Click "Add Service" to record maintenance!</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
                 <div className="flex justify-end">
                     <button
                         onClick={handleExport}
@@ -193,6 +196,8 @@ const ServiceHistoryTable = ({ vehicleId, onEdit }) => {
                         </div>
                     ))}
                 </div>
+                </div>
+                )}
             </div>
 
             <ConfirmDialog

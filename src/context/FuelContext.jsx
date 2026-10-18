@@ -38,7 +38,7 @@ export const FuelProvider = ({ children }) => {
         }
     }, [vehicles, entries, serviceEntries, user, isConfigured]);
 
-    // Data Migration
+    // Data Migration: Run once when user logs in with configured cloud
     useEffect(() => {
         if (!isConfigured) return;
 
@@ -50,28 +50,30 @@ export const FuelProvider = ({ children }) => {
 
         const migrateData = async () => {
             setSyncStatus('migrating');
-            let anyMigrated = false;
+            try {
+                const migrator = async (collectionName, currentData) => {
+                    const guests = (currentData || []).filter(item => item.userId === 'guest');
+                    for (const item of guests) {
+                        const updated = { ...item, userId: user.uid };
+                        await setDoc(doc(db, collectionName, item.id), updated);
+                    }
+                };
 
-            const migrator = async (collectionName, currentData) => {
-                const guests = currentData.filter(item => item.userId === 'guest');
-                for (const item of guests) {
-                    const updated = { ...item, userId: user.uid };
-                    await setDoc(doc(db, collectionName, item.id), updated);
-                    anyMigrated = true;
-                }
-            };
+                await migrator("vehicles", vehicles);
+                await migrator("entries", entries);
+                await migrator("serviceEntries", serviceEntries);
 
-            await migrator("vehicles", vehicles);
-            await migrator("entries", entries);
-            await migrator("serviceEntries", serviceEntries);
-
-            console.log("Migration complete");
-            setMigrationDone(true);
-            setSyncStatus('syncing');
+                console.log("Migration complete");
+            } catch (err) {
+                console.warn("Migration warning:", err);
+            } finally {
+                setMigrationDone(true);
+                setSyncStatus('syncing');
+            }
         };
 
         migrateData();
-    }, [user, isConfigured, vehicles, entries, serviceEntries]);
+    }, [user, isConfigured]);
 
     // Firebase Sync
     useEffect(() => {
@@ -107,46 +109,107 @@ export const FuelProvider = ({ children }) => {
         const id = Date.now().toString();
         const newVehicle = { ...vehicle, id, userId: user?.uid || 'guest' };
         setVehicles(prev => [...prev, newVehicle]);
-        if (user && isConfigured) await setDoc(doc(db, "vehicles", id), newVehicle);
+        if (user && isConfigured) {
+            try {
+                await setDoc(doc(db, "vehicles", id), newVehicle);
+            } catch (err) {
+                console.warn("Firestore save vehicle error:", err);
+            }
+        }
     };
 
     const updateVehicle = async (vehicleId, updates) => {
         setVehicles(prev => prev.map(v => v.id === vehicleId ? { ...v, ...updates } : v));
-        if (user && isConfigured) await setDoc(doc(db, "vehicles", vehicleId), updates, { merge: true });
+        if (user && isConfigured) {
+            try {
+                await setDoc(doc(db, "vehicles", vehicleId), updates, { merge: true });
+            } catch (err) {
+                console.warn("Firestore update vehicle error:", err);
+            }
+        }
+    };
+
+    const deleteVehicle = async (vehicleId) => {
+        setVehicles(prev => prev.filter(v => v.id !== vehicleId));
+        setEntries(prev => prev.filter(e => e.vehicleId !== vehicleId));
+        setServiceEntries(prev => prev.filter(e => e.vehicleId !== vehicleId));
+        if (user && isConfigured) {
+            try {
+                await deleteDoc(doc(db, "vehicles", vehicleId));
+            } catch (err) {
+                console.warn("Firestore delete vehicle error:", err);
+            }
+        }
     };
 
     const addEntry = async (entry) => {
         const id = Date.now().toString();
         const newEntry = { ...entry, id, userId: user?.uid || 'guest' };
         setEntries(prev => [...prev, newEntry]);
-        if (user && isConfigured) await setDoc(doc(db, "entries", id), newEntry);
+        if (user && isConfigured) {
+            try {
+                await setDoc(doc(db, "entries", id), newEntry);
+            } catch (err) {
+                console.warn("Firestore save entry error:", err);
+            }
+        }
     };
 
     const deleteEntry = async (id) => {
         setEntries(prev => prev.filter(e => e.id !== id));
-        if (isConfigured) await deleteDoc(doc(db, "entries", id));
+        if (user && isConfigured) {
+            try {
+                await deleteDoc(doc(db, "entries", id));
+            } catch (err) {
+                console.warn("Firestore delete entry error:", err);
+            }
+        }
     };
 
     const editEntry = async (updatedEntry) => {
         setEntries(prev => prev.map(e => e.id === updatedEntry.id ? updatedEntry : e));
-        if (user && isConfigured) await setDoc(doc(db, "entries", updatedEntry.id), { ...updatedEntry, userId: user.uid });
+        if (user && isConfigured) {
+            try {
+                await setDoc(doc(db, "entries", updatedEntry.id), { ...updatedEntry, userId: user.uid });
+            } catch (err) {
+                console.warn("Firestore edit entry error:", err);
+            }
+        }
     };
 
     const addServiceEntry = async (entry) => {
         const id = Date.now().toString();
         const newEntry = { ...entry, id, userId: user?.uid || 'guest' };
         setServiceEntries(prev => [...prev, newEntry]);
-        if (user && isConfigured) await setDoc(doc(db, "serviceEntries", id), newEntry);
+        if (user && isConfigured) {
+            try {
+                await setDoc(doc(db, "serviceEntries", id), newEntry);
+            } catch (err) {
+                console.warn("Firestore save service error:", err);
+            }
+        }
     };
 
     const deleteServiceEntry = async (id) => {
         setServiceEntries(prev => prev.filter(e => e.id !== id));
-        if (isConfigured) await deleteDoc(doc(db, "serviceEntries", id));
+        if (user && isConfigured) {
+            try {
+                await deleteDoc(doc(db, "serviceEntries", id));
+            } catch (err) {
+                console.warn("Firestore delete service error:", err);
+            }
+        }
     };
 
     const editServiceEntry = async (updatedEntry) => {
         setServiceEntries(prev => prev.map(e => e.id === updatedEntry.id ? updatedEntry : e));
-        if (user && isConfigured) await setDoc(doc(db, "serviceEntries", updatedEntry.id), { ...updatedEntry, userId: user.uid });
+        if (user && isConfigured) {
+            try {
+                await setDoc(doc(db, "serviceEntries", updatedEntry.id), { ...updatedEntry, userId: user.uid });
+            } catch (err) {
+                console.warn("Firestore edit service error:", err);
+            }
+        }
     };
 
     const getVehicleEntries = (vehicleId) => {
@@ -168,6 +231,7 @@ export const FuelProvider = ({ children }) => {
         syncStatus,
         addVehicle,
         updateVehicle,
+        deleteVehicle,
         addEntry,
         deleteEntry,
         editEntry,
