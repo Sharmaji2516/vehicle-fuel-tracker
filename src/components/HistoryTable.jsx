@@ -3,11 +3,11 @@ import { useFuel } from '../context/FuelContext';
 import { useNotification } from '../context/NotificationContext';
 import { formatDate } from '../utils/calculations';
 import ConfirmDialog from './ConfirmDialog';
-import { Download, Receipt } from 'lucide-react';
+import { Download, Receipt, Trash2 } from 'lucide-react';
 import DocumentViewerModal from './DocumentViewerModal';
 
 const HistoryTable = ({ vehicleId, onEdit }) => {
-    const { getVehicleEntries, deleteEntry, vehicles } = useFuel();
+    const { getVehicleEntries, deleteEntry, editEntry, vehicles } = useFuel();
     const { showNotification } = useNotification();
     const entries = getVehicleEntries(vehicleId);
     const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -225,14 +225,29 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
                             </div>
 
                             {entry.receiptUrl && (
-                                <button
-                                    type="button"
-                                    onClick={() => setViewingReceipt(entry)}
-                                    className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 text-xs font-bold transition-colors"
-                                >
-                                    <Receipt className="w-4 h-4" />
-                                    View Fuel Bill / Receipt
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setViewingReceipt(entry)}
+                                        className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 text-xs font-bold transition-colors"
+                                    >
+                                        <Receipt className="w-4 h-4" />
+                                        View Fuel Bill / Receipt
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            if (window.confirm('Delete this attached fuel receipt?')) {
+                                                await editEntry({ ...entry, receiptUrl: null });
+                                                showNotification('Fuel receipt deleted', 'success');
+                                            }
+                                        }}
+                                        className="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/20 transition-all shrink-0"
+                                        title="Delete Fuel Receipt"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
                             )}
 
                             <div className="flex justify-end gap-3 mt-2">
@@ -271,6 +286,13 @@ const HistoryTable = ({ vehicleId, onEdit }) => {
                 documentUrl={viewingReceipt?.receiptUrl}
                 title={`Fuel Receipt • ${viewingReceipt ? formatDate(viewingReceipt.date) : ''}`}
                 subtitle={viewingReceipt ? `₹${viewingReceipt.totalCost} • ${viewingReceipt.liters} Liters @ ₹${viewingReceipt.price}/L` : ''}
+                onDelete={async () => {
+                    if (viewingReceipt) {
+                        await editEntry({ ...viewingReceipt, receiptUrl: null });
+                        showNotification('Fuel receipt deleted successfully', 'success');
+                        setViewingReceipt(null);
+                    }
+                }}
             />
         </>
     );

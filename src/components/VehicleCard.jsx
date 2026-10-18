@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { calculateMileage, calculateAverageMileage, calculateTotalSpent, calculateAllMileages, formatDate, calculateDaysSinceLastService, calculateFuelCost, calculateServiceCost, calculateExpiryStatus, getExpiryWarning } from '../utils/calculations';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Droplet, Wrench, IndianRupee, Calendar, TrendingUp, Info, Shield, FileText, ChevronDown, ChevronUp, AlertTriangle, Edit3, Eye } from 'lucide-react';
+import { Droplet, Wrench, IndianRupee, Calendar, TrendingUp, Info, Shield, FileText, ChevronDown, ChevronUp, AlertTriangle, Edit3, Eye, Trash2 } from 'lucide-react';
+import { useFuel } from '../context/FuelContext';
+import { useNotification } from '../context/NotificationContext';
 import EditVehicleDetailsModal from './EditVehicleDetailsModal';
 import DocumentViewerModal from './DocumentViewerModal';
 
 const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onViewHistory, onAddService, isSelected }) => {
+    const { updateVehicle } = useFuel();
+    const { showNotification } = useNotification();
     const [isDetailsExpanded, setIsDetailsExpanded] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [viewDoc, setViewDoc] = useState(null);
@@ -154,20 +158,40 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
                                     </div>
                                 </div>
                                 {vehicle.pucDocumentUrl ? (
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setViewDoc({
-                                                url: vehicle.pucDocumentUrl,
-                                                title: `${vehicle.name} - PUC Certificate`,
-                                                subtitle: vehicle.pucNumber ? `Certificate #${vehicle.pucNumber}` : ''
-                                            });
-                                        }}
-                                        className="mt-3 w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-[10px] font-black uppercase tracking-wider transition-all"
-                                    >
-                                        <Eye className="w-3.5 h-3.5" /> View Certificate Copy
-                                    </button>
+                                    <div className="mt-3 flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setViewDoc({
+                                                    url: vehicle.pucDocumentUrl,
+                                                    title: `${vehicle.name} - PUC Certificate`,
+                                                    subtitle: vehicle.pucNumber ? `Certificate #${vehicle.pucNumber}` : '',
+                                                    onDelete: async () => {
+                                                        await updateVehicle(vehicle.id, { pucDocumentUrl: null });
+                                                        showNotification('PUC certificate removed', 'success');
+                                                    }
+                                                });
+                                            }}
+                                            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-[10px] font-black uppercase tracking-wider transition-all"
+                                        >
+                                            <Eye className="w-3.5 h-3.5" /> View Certificate
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                if (window.confirm('Delete attached PUC certificate copy?')) {
+                                                    await updateVehicle(vehicle.id, { pucDocumentUrl: null });
+                                                    showNotification('PUC certificate copy deleted', 'success');
+                                                }
+                                            }}
+                                            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white border border-rose-500/20 transition-all shrink-0"
+                                            title="Delete PUC certificate copy"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
                                 ) : (
                                     <button
                                         type="button"
@@ -211,20 +235,40 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
                                     </div>
                                 </div>
                                 {vehicle.insuranceDocumentUrl ? (
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setViewDoc({
-                                                url: vehicle.insuranceDocumentUrl,
-                                                title: `${vehicle.name} - Insurance Policy`,
-                                                subtitle: vehicle.insuranceCompany ? `${vehicle.insuranceCompany} • Policy #${vehicle.insurancePolicyNumber || ''}` : ''
-                                            });
-                                        }}
-                                        className="mt-3 w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-black uppercase tracking-wider transition-all"
-                                    >
-                                        <Eye className="w-3.5 h-3.5" /> View Policy Document
-                                    </button>
+                                    <div className="mt-3 flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setViewDoc({
+                                                    url: vehicle.insuranceDocumentUrl,
+                                                    title: `${vehicle.name} - Insurance Policy`,
+                                                    subtitle: vehicle.insuranceCompany ? `${vehicle.insuranceCompany} • Policy #${vehicle.insurancePolicyNumber || ''}` : '',
+                                                    onDelete: async () => {
+                                                        await updateVehicle(vehicle.id, { insuranceDocumentUrl: null });
+                                                        showNotification('Insurance document removed', 'success');
+                                                    }
+                                                });
+                                            }}
+                                            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-black uppercase tracking-wider transition-all"
+                                        >
+                                            <Eye className="w-3.5 h-3.5" /> View Policy
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                if (window.confirm('Delete attached Insurance document copy?')) {
+                                                    await updateVehicle(vehicle.id, { insuranceDocumentUrl: null });
+                                                    showNotification('Insurance document copy deleted', 'success');
+                                                }
+                                            }}
+                                            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white border border-rose-500/20 transition-all shrink-0"
+                                            title="Delete Insurance document copy"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
                                 ) : (
                                     <button
                                         type="button"
@@ -313,6 +357,7 @@ const VehicleCard = ({ vehicle, entries, serviceEntries = [], onAddEntry, onView
                 documentUrl={viewDoc?.url}
                 title={viewDoc?.title}
                 subtitle={viewDoc?.subtitle}
+                onDelete={viewDoc?.onDelete}
             />
         </motion.div>
     );

@@ -3,11 +3,11 @@ import { useFuel } from '../context/FuelContext';
 import { useNotification } from '../context/NotificationContext';
 import { formatDate } from '../utils/calculations';
 import ConfirmDialog from './ConfirmDialog';
-import { Download, Receipt } from 'lucide-react';
+import { Download, Receipt, Trash2 } from 'lucide-react';
 import DocumentViewerModal from './DocumentViewerModal';
 
 const ServiceHistoryTable = ({ vehicleId, onEdit }) => {
-    const { getVehicleServiceEntries, deleteServiceEntry, vehicles } = useFuel();
+    const { getVehicleServiceEntries, deleteServiceEntry, editServiceEntry, vehicles } = useFuel();
     const { showNotification } = useNotification();
     const entries = getVehicleServiceEntries(vehicleId);
     const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -162,14 +162,29 @@ const ServiceHistoryTable = ({ vehicleId, onEdit }) => {
                                 </div>
                             </div>
                             {entry.invoiceUrl && (
-                                <button
-                                    type="button"
-                                    onClick={() => setViewingInvoice(entry)}
-                                    className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs font-bold transition-colors"
-                                >
-                                    <Receipt className="w-4 h-4" />
-                                    View Service Invoice / Bill
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setViewingInvoice(entry)}
+                                        className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs font-bold transition-colors"
+                                    >
+                                        <Receipt className="w-4 h-4" />
+                                        View Service Invoice / Bill
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            if (window.confirm('Delete this attached service bill / invoice?')) {
+                                                await editServiceEntry({ ...entry, invoiceUrl: null });
+                                                showNotification('Service invoice deleted', 'success');
+                                            }
+                                        }}
+                                        className="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/20 transition-all shrink-0"
+                                        title="Delete Service Invoice"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
                             )}
                             <div className="flex justify-end gap-3 mt-2">
                                 <button onClick={() => onEdit(entry)} className="flex-1 bg-slate-700 hover:bg-slate-600 text-indigo-300 py-2 rounded-lg text-sm font-medium transition-colors">Edit</button>
@@ -197,6 +212,13 @@ const ServiceHistoryTable = ({ vehicleId, onEdit }) => {
                 documentUrl={viewingInvoice?.invoiceUrl}
                 title={`Service Invoice • ${viewingInvoice?.serviceType || 'Maintenance'}`}
                 subtitle={viewingInvoice ? `${formatDate(viewingInvoice.date)} • ₹${viewingInvoice.cost} • ${viewingInvoice.odometer} km` : ''}
+                onDelete={async () => {
+                    if (viewingInvoice) {
+                        await editServiceEntry({ ...viewingInvoice, invoiceUrl: null });
+                        showNotification('Service invoice deleted successfully', 'success');
+                        setViewingInvoice(null);
+                    }
+                }}
             />
         </>
     );
